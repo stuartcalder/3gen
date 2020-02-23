@@ -1,3 +1,6 @@
+/* Copyright (c) 2020 Stuart Steven Calder
+ * See the accompanying LICENSE file for licensing information.
+ */
 #include "password_generator.hh"
 
 #include <cstdlib>
