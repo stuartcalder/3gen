@@ -71,10 +71,11 @@ Password_Generator::Password_Generator (int const argc, char const *argv[])
 	{
 		int random_bytes_left = Number_Random_Bytes;
 		u8_t *ptr = buffer + Random_Bytes_Offset;
-		while (random_bytes_left >= 64) {
-			csprng.get( ptr, 64 );
-			ptr += 64;
-			random_bytes_left -= 64;
+		_CTIME_CONST(int) Bytes = CSPRNG_t::Max_Bytes_Per_Call;
+		while (random_bytes_left >= Bytes) {
+			csprng.get( ptr, Bytes );
+			ptr += Bytes;
+			random_bytes_left -= Bytes;
 		}
 		if (random_bytes_left > 0)
 			csprng.get( ptr, random_bytes_left );
