@@ -57,6 +57,7 @@ class _PUBLIC Password_Generator
 		bool use_uppercase = false;
 		bool use_digits = false;
 		bool use_symbols = false;
+		bool use_formatting = false;
 		bool supplement_entropy = false;
 		int requested_password_size = 0;
 		int number_characters = 0;

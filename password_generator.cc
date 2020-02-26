@@ -65,9 +65,6 @@ Password_Generator::Password_Generator (int const argc, char const *argv[])
 		supplement_entropy_( csprng, skein, (buffer + Entropy_Data_Offset) );
 	}
 	// Generate enough randomness to produce the number of characters needed.
-#if 0
-	csprng.get( (buffer + Random_Bytes_Offset), Number_Random_Bytes );
-#endif
 	{
 		int random_bytes_left = Number_Random_Bytes;
 		u8_t *ptr = buffer + Random_Bytes_Offset;
@@ -81,10 +78,36 @@ Password_Generator::Password_Generator (int const argc, char const *argv[])
 			csprng.get( ptr, random_bytes_left );
 	}
 	// Process the generated randomness into a password using the generated character_table.
-	int size = generate_password_( reinterpret_cast<char*>(buffer + Password_Offset), reinterpret_cast<u64_t*>(buffer + Random_Bytes_Offset) );
+	int const size = generate_password_( reinterpret_cast<char*>(buffer + Password_Offset), reinterpret_cast<u64_t*>(buffer + Random_Bytes_Offset) );
 	// Output the pseudorandomly generated password.
-	std::fwrite( (buffer + Password_Offset), sizeof(char), size, stdout );
-	std::putchar( '\n' );
+	if (use_formatting) {
+		_CTIME_CONST(int) Chars_Per_Block = 5;
+		_CTIME_CONST(int) Blocks_Per_Line = 5;
+
+		int chars_left = size;
+		int blocks_left = Blocks_Per_Line;
+		char *pwd = reinterpret_cast<char*>(buffer + Password_Offset);
+		while (chars_left >= Chars_Per_Block) {
+			std::fwrite( pwd, sizeof(char), Chars_Per_Block, stdout );
+			pwd        += Chars_Per_Block;
+			chars_left -= Chars_Per_Block;
+			if (--blocks_left == 0) {
+				blocks_left = Blocks_Per_Line;
+				std::putchar( '\n' );
+			} else {
+				std::fputs( "  ", stdout );
+			}
+		}
+		if (chars_left > 0) {
+			std::fwrite( pwd, sizeof(char), chars_left, stdout );
+			std::putchar( '\n' );
+		}
+		if (size % Chars_Per_Block == 0)
+			std::putchar( '\n' );
+	} else {
+		std::fwrite( (buffer + Password_Offset), sizeof(char), size, stdout );
+		std::putchar( '\n' );
+	}
 	
 	UNLOCK_MEMORY( buffer, sizeof(buffer) );
 	ssc::zero_sensitive( buffer, sizeof(buffer) );
@@ -112,6 +135,8 @@ void Password_Generator::process_arguments_ (Arg_Map_t &&arg_map)
 			use_digits = true;
 		} else if (arg_map[ i ].first == "-s" || arg_map[ i ].first == "--symbol") {
 			use_symbols = true;
+		} else if (arg_map[ i ].first == "-f" || arg_map[ i ].first == "--format") {
+			use_formatting = true;
 		} else if (arg_map[ i ].first == "-a" || arg_map[ i ].first == "--all") {
 			use_lowercase = true;
 			use_uppercase = true;
@@ -132,13 +157,14 @@ void Password_Generator::process_arguments_ (Arg_Map_t &&arg_map)
 } /* process_arguments_(Arg_Map_t&&) */
 void Password_Generator::print_help_ ()
 {
-	_CTIME_CONST(auto) Help_String = "Usage: 3gen [-h] [-l] [-u] [-d] [-s] [-a] [-E] Number_Characters\n"
+	_CTIME_CONST(auto) Help_String = "Usage: 3gen [-h] [-l] [-u] [-d] [-s] [-a] [-f] [-E] Number_Characters\n"
 		                         "Switches MUST be in seperate words. (i.e. 3gen -l -u 20; NOT 3gen -lu 20)\n"
 					 "-h, --help    : Print out this usage information to stdout.\n"
 					 "-l, --lower   : Use lowercase characters during password generation.\n"
 					 "-u, --upper   : Use uppercase characters during password generation.\n"
 					 "-d, --digit   : Use digit characters during password generation.\n"
 					 "-s, --symbol  : Use symbol characters during password generation.\n"
+					 "-f, --format  : Format the password output for easier readability.\n"
 					 "-a, --all     : Use all character sets during password generation.\n"
 					 "-E, --entropy : Supplement the RNG with a passphrase input from the keyboard.";
 	std::puts( Help_String );
