@@ -101,8 +101,7 @@ Password_Generator::Password_Generator (int const argc, char const *argv[])
 		if (chars_left > 0) {
 			std::fwrite( pwd, sizeof(char), chars_left, stdout );
 		}
-		std::putchar( '\n' );
-		if (blocks_left == Blocks_Per_Line)
+		if (blocks_left != Blocks_Per_Line)
 			std::putchar( '\n' );
 	} else {
 		std::fwrite( (buffer + Password_Offset), sizeof(char), size, stdout );
@@ -275,10 +274,10 @@ void Password_Generator::supplement_entropy_ (CSPRNG_t &csprng, Skein_t &skein, 
 void Password_Generator::process_pw_size_ (std::string &number)
 {
 	// Force it to be a number representing the requested password size.
-	static_assert (Max_Password_Length == 120);
+	static_assert (Max_Password_Length == 125);
 	_CTIME_CONST(int) Max_Chars = 3;
 	if (number.size() > Max_Chars)
-		errx( "Error: Maximum password size is 120 characters.\n" );
+		errx( "Error: Maximum password size is 125 characters.\n" );
 	else if (number.size() < 1)
 		errx( "Error: Minimum password size is 1 character.\n" );
 	if (ssc::enforce_integer( number )) {
@@ -286,7 +285,7 @@ void Password_Generator::process_pw_size_ (std::string &number)
 		if (length >= 1 && length <= Max_Password_Length)
 			requested_password_size = length;
 		else
-			errx( "Error: Minimum password size is 1 character; maximum password size is 120 characters.\n" );
+			errx( "Error: Minimum password size is 1 character; maximum password size is 125 characters.\n" );
 	} else {
 		errx( "Error: Only integer inputs allowed for specifying maximum password size.\n" );
 	}

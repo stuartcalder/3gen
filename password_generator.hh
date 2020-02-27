@@ -24,7 +24,7 @@ class _PUBLIC Password_Generator
 		_CTIME_CONST(int) Algorithm_Bits = 512;
 		_CTIME_CONST(int) Algorithm_Bytes = Algorithm_Bits / CHAR_BIT;
 		// Only allow generating passwords up to this size.
-		_CTIME_CONST(int) Max_Password_Length = 120;
+		_CTIME_CONST(int) Max_Password_Length = 125;
 		_CTIME_CONST(int) Password_Buffer_Bytes = Max_Password_Length + 1;
 		// A 64-bit word of random data to be mapped to each output character of password.
 		_CTIME_CONST(int) Number_Random_Bytes = Password_Buffer_Bytes * sizeof(u64_t);
