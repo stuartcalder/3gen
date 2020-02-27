@@ -163,8 +163,8 @@ void Password_Generator::print_help_ ()
 					 "-u, --upper   : Use uppercase characters during password generation.\n"
 					 "-d, --digit   : Use digit characters during password generation.\n"
 					 "-s, --symbol  : Use symbol characters during password generation.\n"
-					 "-f, --format  : Format the password output for easier readability.\n"
 					 "-a, --all     : Use all character sets during password generation.\n"
+					 "-f, --format  : Format the password output for easier readability.\n"
 					 "-E, --entropy : Supplement the RNG with a passphrase input from the keyboard.";
 	std::puts( Help_String );
 } /* print_help_() */
