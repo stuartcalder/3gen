@@ -100,9 +100,9 @@ Password_Generator::Password_Generator (int const argc, char const *argv[])
 		}
 		if (chars_left > 0) {
 			std::fwrite( pwd, sizeof(char), chars_left, stdout );
-			std::putchar( '\n' );
 		}
-		if (size % Chars_Per_Block == 0)
+		std::putchar( '\n' );
+		if (blocks_left == Blocks_Per_Line)
 			std::putchar( '\n' );
 	} else {
 		std::fwrite( (buffer + Password_Offset), sizeof(char), size, stdout );
