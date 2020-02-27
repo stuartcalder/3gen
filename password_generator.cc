@@ -284,9 +284,10 @@ void Password_Generator::process_pw_size_ (std::string &number)
 		int length = atoi( number.c_str() );
 		if (length >= 1 && length <= Max_Password_Length)
 			requested_password_size = length;
-		else
+		else {
 			static_assert (Max_Password_Length == 125);
 			errx( "Error: Minimum password size is 1 character; maximum password size is 125 characters.\n" );
+		}
 	} else {
 		errx( "Error: Only integer inputs allowed for specifying maximum password size.\n" );
 	}
