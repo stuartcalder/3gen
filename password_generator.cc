@@ -229,7 +229,8 @@ int Password_Generator::generate_password_ (char *password, u64_t const *random_
 	// 	* The quanta per character describes the number of discrete integer values that map to
 	// 	  a given character offset.
 	// 	* (local_limit) == (number_characters * quanta_per_character)
-	_CTIME_CONST(u64_t) Upper_Limit = (std::numeric_limits<u64_t>::max)() - Number_All_Characters;
+#undef max // Stop windows.h from exploding this code because of their max() macro.
+	_CTIME_CONST(u64_t) Upper_Limit = std::numeric_limits<u64_t>::max() - Number_All_Characters;
 	u64_t const local_limit = Upper_Limit + (Upper_Limit % static_cast<u64_t>(number_characters));
 	u64_t const quanta_per_character = local_limit / static_cast<u64_t>(number_characters);
 
