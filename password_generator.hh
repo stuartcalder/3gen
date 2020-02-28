@@ -41,7 +41,7 @@ class _PUBLIC Password_Generator
 		_CTIME_CONST(int) Number_Symbols = 32;
 		_CTIME_CONST(int) Number_All_Characters = Number_Lowercase + Number_Uppercase + Number_Digits + Number_Symbols;
 
-		_CTIME_CONST(u64_t) Upper_Limit = std::numeric_limits<u64_t>::max() - (Number_All_Characters + 1);
+		_CTIME_CONST(u64_t) Upper_Limit = (std::numeric_limits<u64_t>::max)() - Number_All_Characters;
 
 		// The specific algorithms to use.
 		using Threefish_t = ssc::Threefish<Algorithm_Bits>;
