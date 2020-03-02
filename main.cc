@@ -18,7 +18,7 @@
 #	ifndef OPENBSD_UNVEIL
 #		define OPENBSD_UNVEIL(path,permissions) \
 		if (unveil( path, permissions ) != 0) \
-			errx( "Failed to unveil() " #path "\n" )
+			errx( "Failed to unveil()\n" )
 #	else
 #		error 'OPENBSD_UNVEIL Already Defined'
 #	endif /* ifndef OPENBSD_UNVEIL */
@@ -31,6 +31,7 @@ int main (int const argc, char const *argv[])
 {
 
 	OPENBSD_UNVEIL( "/usr", "rx" );
+	OPENBSD_UNVEIL( nullptr, nullptr );
 
 	Password_Generator{ argc, argv };
 	return EXIT_SUCCESS;
