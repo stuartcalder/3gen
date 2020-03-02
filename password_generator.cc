@@ -294,7 +294,3 @@ void Password_Generator::process_pw_size_ (std::string &number)
 #undef PROMPT
 #undef UNLOCK_MEMORY
 #undef LOCK_MEMORY
-
-
-
-

@@ -12,10 +12,10 @@ lib       = []
 depends   = []
 cpp_flags = []
 
-DEFINE_FLAG_PREFIX = '-D'
+_Define_Flag_Prefix = '-D'
 # The define flag prefix is different on Windows with MSVC compiler.
 if os == 'windows' and cc.get_id() == 'msvc'
-	DEFINE_FLAG_PREFIX = '/D'
+	_Define_Flag_Prefix = '/D'
 endif
 
 # Handle BSD-specifics.
@@ -43,8 +43,8 @@ elif os == 'linux'
 elif os == 'windows'
 	depends += cc.find_library('bcrypt')
 	depends += cc.find_library('ssc', static: true, dirs: lib)
-	flag = DEFINE_FLAG_PREFIX + '__IMPORT_STATIC'
-	cpp_flags += flag
+	_flag = _Define_Flag_Prefix + '__IMPORT_STATIC'
+	cpp_flags += _flag
 else
 	assert(false)
 endif
