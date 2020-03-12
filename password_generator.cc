@@ -108,8 +108,8 @@ Password_Generator::Password_Generator (int const argc, char const *argv[])
 		std::putchar( '\n' );
 	}
 	
-	UNLOCK_MEMORY( buffer, sizeof(buffer) );
 	ssc::zero_sensitive( buffer, sizeof(buffer) );
+	UNLOCK_MEMORY( buffer, sizeof(buffer) );
 } /* constructor */
 
 void Password_Generator::process_arguments_ (Arg_Map_t &&arg_map)
