@@ -53,6 +53,7 @@ class _PUBLIC Password_Generator
 		Password_Generator () = delete;
 		Password_Generator (int const argc, char const *argv[]);
 	private:
+		char character_table [Number_All_Characters];
 		bool use_lowercase = false;
 		bool use_uppercase = false;
 		bool use_digits = false;
@@ -61,7 +62,6 @@ class _PUBLIC Password_Generator
 		bool supplement_entropy = false;
 		int requested_password_size = 0;
 		int number_characters = 0;
-		char character_table [Number_All_Characters];
 
 		void process_arguments_ (Arg_Map_t &&);
 		void print_help_ ();
