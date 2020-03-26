@@ -22,5 +22,3 @@ int main (int const argc, char const *argv[])
 	Password_Generator{ argc, argv };
 	return EXIT_SUCCESS;
 }
-
-#undef OPENBSD_UNVEIL
