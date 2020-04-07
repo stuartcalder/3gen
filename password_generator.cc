@@ -235,8 +235,11 @@ int Password_Generator::generate_password_ (char *password, u64_t const *random_
 	std::memset( password, 0, Password_Buffer_Bytes );
 	u64_t offset;
 	for (int i = 0; i < requested_password_size; ++i) {
+#if 0
 		u64_t p;
 		std::memcpy( &p, (random_words + i), sizeof(p) );
+#endif
+		u64_t p = random_words[ i ];
 		if (p <= local_limit) {
 			u64_t const p_prime = p - (p % quanta_per_character);
 			offset = p_prime / quanta_per_character;

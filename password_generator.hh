@@ -45,7 +45,7 @@ class _PUBLIC Password_Generator
 
 		// The specific algorithms to use.
 		using Threefish_t = ssc::Threefish<Algorithm_Bits>;
-		using UBI_t       = ssc::Unique_Block_Iteration<Threefish_t,Algorithm_Bits>;
+		using UBI_t       = ssc::Unique_Block_Iteration<Algorithm_Bits>;
 		using Skein_t     = ssc::Skein<Algorithm_Bits>;
 		using CSPRNG_t    = ssc::Skein_CSPRNG<Algorithm_Bits>;
 		using Arg_Map_t   = ssc::Arg_Mapping::Arg_Map_t;
