@@ -27,58 +27,30 @@ Password_Generator::Password_Generator (int const argc, char const *argv[])
 	// Process the command-line arguments.
 	process_arguments_( ssc::Arg_Mapping{ argc, argv }.consume() );
 
-	// Define the buffer size as the sum of all these required bytes.
-	_CTIME_CONST(int) Buffer_Size = [](){
-		int size = 0;
-		size += Number_Random_Bytes;
-		size += Threefish_t::Buffer_Bytes;
-		size += UBI_t::Buffer_Bytes;
-		size += CSPRNG_t::Buffer_Bytes;
-		size += Entropy_Buffer_Bytes;
-		size += Password_Buffer_Bytes;
-		size += (size % sizeof(u64_t));
-		return size;
-	}();
-	// Determine offsets of our sensitive data.
-	_CTIME_CONST(int) Random_Bytes_Offset = 0;
-	_CTIME_CONST(int) Threefish_Data_Offset = Random_Bytes_Offset + Number_Random_Bytes;
-	_CTIME_CONST(int) UBI_Data_Offset = Threefish_Data_Offset + Threefish_t::Buffer_Bytes;
-	_CTIME_CONST(int) CSPRNG_Data_Offset = UBI_Data_Offset + UBI_t::Buffer_Bytes;
-	_CTIME_CONST(int) Entropy_Data_Offset = CSPRNG_Data_Offset + CSPRNG_t::Buffer_Bytes;
-	_CTIME_CONST(int) Password_Offset = Entropy_Data_Offset + Entropy_Buffer_Bytes;
+	struct {
+		typename CSPRNG_f::Data csprng_data;
+		alignas(u64_t) u8_t     random_bytes  [Number_Random_Bytes];
+		u8_t                    entropy_bytes [Entropy_Buffer_Bytes];
+		u8_t                    password      [Password_Buffer_Bytes];
+	} crypto;
+	static_assert (Number_Random_Bytes % sizeof(u64_t) == 0);
+	LOCK_MEMORY (&crypto,sizeof(crypto));
+	CSPRNG_f::initialize_seed( &crypto.csprng_data );
 
-	// Create our buffer, aligned to 64-bit words.
-	alignas(sizeof(u64_t)) u8_t buffer [Buffer_Size];
-
-	// Lock memory from swapping on supported platforms.
-	LOCK_MEMORY( buffer, sizeof(buffer) );
-
-	// Create cryptographic objects.
-	Threefish_t threefish{ reinterpret_cast<u64_t*>(buffer + Threefish_Data_Offset) };
-	UBI_t ubi{ &threefish, (buffer + UBI_Data_Offset) };
-	Skein_t skein{ &ubi };
-	CSPRNG_t csprng{ &skein, (buffer + CSPRNG_Data_Offset) };
 	// Fill the symbol table with the correct symbols according to what we got from the command-line arguments.
 	set_character_table_();
 	// Seed the RNG with additional entropy if specified to do so from the command-line arguments.
 	if (supplement_entropy) {
-		supplement_entropy_( csprng, skein, (buffer + Entropy_Data_Offset) );
+		supplement_entropy_( &crypto.csprng_data, crypto.entropy_bytes );
 	}
 	// Generate enough randomness to produce the number of characters needed.
 	{
-		int random_bytes_left = Number_Random_Bytes;
-		u8_t *ptr = buffer + Random_Bytes_Offset;
-		_CTIME_CONST(int) Bytes = CSPRNG_t::Max_Bytes_Per_Call;
-		while (random_bytes_left >= Bytes) {
-			csprng.get( ptr, Bytes );
-			ptr += Bytes;
-			random_bytes_left -= Bytes;
-		}
-		if (random_bytes_left > 0)
-			csprng.get( ptr, random_bytes_left );
+	CSPRNG_f::get( &crypto.csprng_data,
+		       crypto.random_bytes,
+		       Number_Random_Bytes );
 	}
 	// Process the generated randomness into a password using the generated character_table.
-	int const size = generate_password_( reinterpret_cast<char*>(buffer + Password_Offset), reinterpret_cast<u64_t*>(buffer + Random_Bytes_Offset) );
+	int const size = generate_password_ ( crypto.password, reinterpret_cast<u64_t*>(crypto.random_bytes) );
 	// Output the pseudorandomly generated password.
 	if (use_formatting) {
 		_CTIME_CONST(int) Chars_Per_Block = 5;
@@ -86,9 +58,9 @@ Password_Generator::Password_Generator (int const argc, char const *argv[])
 
 		int chars_left = size;
 		int blocks_left = Blocks_Per_Line;
-		char *pwd = reinterpret_cast<char*>(buffer + Password_Offset);
+		u8_t *pwd = crypto.password;
 		while (chars_left >= Chars_Per_Block) {
-			std::fwrite( pwd, sizeof(char), Chars_Per_Block, stdout );
+			std::fwrite( pwd, sizeof(u8_t), Chars_Per_Block, stdout );
 			pwd        += Chars_Per_Block;
 			chars_left -= Chars_Per_Block;
 			if (--blocks_left == 0) {
@@ -99,17 +71,17 @@ Password_Generator::Password_Generator (int const argc, char const *argv[])
 			}
 		}
 		if (chars_left > 0) {
-			std::fwrite( pwd, sizeof(char), chars_left, stdout );
+			std::fwrite( pwd, sizeof(u8_t), chars_left, stdout );
 		}
 		if (blocks_left != Blocks_Per_Line)
 			std::putchar( '\n' );
 	} else {
-		std::fwrite( (buffer + Password_Offset), sizeof(char), size, stdout );
+		std::fwrite( crypto.password, sizeof(u8_t), size, stdout );
 		std::putchar( '\n' );
 	}
 	
-	ssc::zero_sensitive( buffer, sizeof(buffer) );
-	UNLOCK_MEMORY( buffer, sizeof(buffer) );
+	ssc::zero_sensitive( &crypto, sizeof(crypto) );
+	UNLOCK_MEMORY (&crypto,sizeof(crypto));
 } /* constructor */
 
 void Password_Generator::process_arguments_ (Arg_Map_t &&arg_map)
@@ -171,19 +143,19 @@ void Password_Generator::print_help_ ()
 void Password_Generator::set_character_table_ ()
 {
 	// Establish relevant constants.
-	_CTIME_CONST(char) Lowercase_Set[] = {
+	_CTIME_CONST (u8_t) Lowercase_Set[] = {
 		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
 	};
 	static_assert (sizeof(Lowercase_Set) == Number_Lowercase);
-	_CTIME_CONST(char) Uppercase_Set[] = {
+	_CTIME_CONST (u8_t) Uppercase_Set[] = {
 		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
 	};
 	static_assert (sizeof(Uppercase_Set) == Number_Uppercase);
-	_CTIME_CONST(char) Digit_Set[] = {
+	_CTIME_CONST (u8_t) Digit_Set[] = {
 		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
 	};
 	static_assert (sizeof(Digit_Set) == Number_Digits);
-	_CTIME_CONST(char) Symbol_Set[] = {
+	_CTIME_CONST (u8_t) Symbol_Set[] = {
 		'!', '"', '#', '$', '%', '&', '\'', '(', ')', '*',
 		'+', ',', '-', '.', '/', ':', ';' , '<', '=', '>',
 		'?', '@', '[','\\', ']', '^' , '_', '`', '{', '|',
@@ -191,7 +163,7 @@ void Password_Generator::set_character_table_ ()
 	};
 	static_assert (sizeof(Symbol_Set) == Number_Symbols);
 	// Fill the character table with what characters we'll be using.
-	char *character= character_table;
+	u8_t *character= character_table;
 	// Force at least one character set to be enabled by the end.
 	bool one_is_valid = false;
 	if (use_lowercase) {
@@ -220,7 +192,7 @@ void Password_Generator::set_character_table_ ()
 	if (!one_is_valid)
 		errx( "Error: No valid character sets chosen. Use -h for help.\n" );
 } /* set_character_table_() */
-int Password_Generator::generate_password_ (char *password, u64_t const *random_words)
+int Password_Generator::generate_password_ (u8_t *password, u64_t const *random_words)
 {
 	// Define the upper limit, local limit, and quanta per character.
 	// 	* The upper limit marks the maximum.
@@ -235,10 +207,6 @@ int Password_Generator::generate_password_ (char *password, u64_t const *random_
 	std::memset( password, 0, Password_Buffer_Bytes );
 	u64_t offset;
 	for (int i = 0; i < requested_password_size; ++i) {
-#if 0
-		u64_t p;
-		std::memcpy( &p, (random_words + i), sizeof(p) );
-#endif
 		u64_t p = random_words[ i ];
 		if (p <= local_limit) {
 			u64_t const p_prime = p - (p % quanta_per_character);
@@ -248,7 +216,7 @@ int Password_Generator::generate_password_ (char *password, u64_t const *random_
 		}
 		password[ i ] = character_table[ offset ];
 	}
-	return std::strlen( password );
+	return std::strlen( reinterpret_cast<char*>(password) );
 } /* generate_password_() */
 #if    defined (__UnixLike__)
 #	define PROMPT "\n> "
@@ -257,34 +225,32 @@ int Password_Generator::generate_password_ (char *password, u64_t const *random_
 #else
 #	error 'Unsupported OS'
 #endif
-void Password_Generator::supplement_entropy_ (CSPRNG_t &csprng, Skein_t &skein, u8_t *buffer)
+void Password_Generator::supplement_entropy_ (typename CSPRNG_f::Data *csprng_data,
+		                              u8_t                    *buffer)
 {
 	static_assert (CHAR_BIT == 8);
 	_CTIME_CONST(int) Hash_Size = Algorithm_Bytes;
 	static_assert (Max_Entropy_Length == 120);
-	_CTIME_CONST(auto) Entropy_Prompt = "Please input up to 120 random characters." PROMPT;
-	static_assert (sizeof(char) == sizeof(u8_t));
-
+	_CTIME_CONST(auto&) Entropy_Prompt = "Please input up to 120 random characters." PROMPT;
 	u8_t *hash = buffer;
-	char *keyboard_input = reinterpret_cast<char*>(buffer + Hash_Size);
+	u8_t *keyboard_input = hash + Hash_Size;
 	int num_input_chars = ssc::obtain_password<Entropy_Buffer_Bytes>( keyboard_input, Entropy_Prompt );
-	static_assert (Skein_t::State_Bytes == Hash_Size);
-	skein.hash_native( hash, reinterpret_cast<u8_t*>(keyboard_input), num_input_chars );
-	static_assert (CSPRNG_t::State_Bytes == Hash_Size);
-	csprng.reseed( hash );
+	Skein_f::hash_native( &(csprng_data->skein_data), hash, keyboard_input, num_input_chars );
+	CSPRNG_f::reseed( csprng_data, hash );
+
 } /* supplement_entropy_(CSPRNG_t&,Skein_t&,u8_t*) */
 void Password_Generator::process_pw_size_ (std::string &number)
 {
 	// Force it to be a number representing the requested password size.
 	static_assert (Max_Password_Length == 125);
 	_CTIME_CONST(int) Max_Chars = 3;
-	if (number.size() > Max_Chars)
+	if( number.size() > Max_Chars )
 		errx( "Error: Maximum password size is 125 characters.\n" );
-	else if (number.size() < 1)
+	else if( number.size() < 1 )
 		errx( "Error: Minimum password size is 1 character.\n" );
-	if (ssc::enforce_integer( number )) {
-		int length = atoi( number.c_str() );
-		if (length >= 1 && length <= Max_Password_Length)
+	if( ssc::enforce_integer( number ) ) {
+		int const length = atoi( number.c_str() );
+		if( length >= 1 && length <= Max_Password_Length )
 			requested_password_size = length;
 		else {
 			static_assert (Max_Password_Length == 125);

@@ -9,9 +9,12 @@
 #include <ssc/general/integers.hh>
 #include <ssc/general/arg_mapping.hh>
 #include <ssc/crypto/operations.hh>
+#if 0
 #include <ssc/crypto/threefish.hh>
 #include <ssc/crypto/skein.hh>
 #include <ssc/crypto/skein_csprng.hh>
+#endif
+#include <ssc/crypto/skein_csprng_f.hh>
 #include <ssc/interface/terminal.hh>
 
 using namespace ssc::ints;
@@ -44,16 +47,20 @@ class _PUBLIC Password_Generator
 		_CTIME_CONST(u64_t) Upper_Limit = (std::numeric_limits<u64_t>::max)() - Number_All_Characters;
 
 		// The specific algorithms to use.
+#if 0
 		using Threefish_t = ssc::Threefish<Algorithm_Bits>;
 		using UBI_t       = ssc::Unique_Block_Iteration<Algorithm_Bits>;
 		using Skein_t     = ssc::Skein<Algorithm_Bits>;
 		using CSPRNG_t    = ssc::Skein_CSPRNG<Algorithm_Bits>;
+#endif
+		using Skein_f     = ssc::Skein_F<Algorithm_Bits>;
+		using CSPRNG_f    = ssc::Skein_CSPRNG_F<Algorithm_Bits>;
 		using Arg_Map_t   = ssc::Arg_Mapping::Arg_Map_t;
 
 		Password_Generator () = delete;
 		Password_Generator (int const argc, char const *argv[]);
 	private:
-		char character_table [Number_All_Characters];
+		u8_t character_table [Number_All_Characters];
 		bool use_lowercase = false;
 		bool use_uppercase = false;
 		bool use_digits = false;
@@ -66,8 +73,8 @@ class _PUBLIC Password_Generator
 		void process_arguments_ (Arg_Map_t &&);
 		void print_help_ ();
 		void set_character_table_ ();
-		int generate_password_ (char *password, u64_t const *random_words);
-		void supplement_entropy_ (CSPRNG_t &csprng, Skein_t &skein, u8_t *buffer);
+		int generate_password_ (u8_t *password, u64_t const *random_words);
+		void supplement_entropy_ (typename CSPRNG_f::Data *csprng_data, u8_t *buffer);
 		void process_pw_size_ (std::string &number);
 };
 
