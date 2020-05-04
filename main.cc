@@ -16,6 +16,8 @@ int main (int const argc, char const *argv[])
 	_OPENBSD_UNVEIL( "/usr", "rx" );
 	_OPENBSD_UNVEIL( nullptr, nullptr );
 
-	Password_Generator{ argc, argv };
+	C_Argument_Map c_arg_map{ argc, argv };
+
+	Password_Generator{ c_arg_map };
 	return EXIT_SUCCESS;
 }

@@ -5,10 +5,15 @@
 #include <cstring>
 #include <string>
 #include <limits>
+#if 0
 #include <ssc/general/arg_mapping.hh>
+#else
+#	include <ssc/general/c_argument_map.hh>
+#endif
 #include <ssc/general/parse_string.hh>
 #include <ssc/memory/os_memory_locking.hh>
 #include <ssc/crypto/implementation/common.hh>
+using namespace ssc;
 
 #if    defined (LOCK_MEMORY) || defined (UNLOCK_MEMORY)
 #	error 'LOCK_MEMORY or UNLOCK_MEMORY Already Defined'
@@ -22,21 +27,27 @@
 #	define UNLOCK_MEMORY(memory,size)
 #endif
 
-Password_Generator::Password_Generator (int const argc, char const *argv[])
+Password_Generator::Password_Generator (C_Argument_Map &c_arg_map)
 {
 	// Process the command-line arguments.
+#if 0
 	process_arguments_( ssc::Arg_Mapping{ argc, argv }.consume() );
+#else
+#endif
 
+	static_assert (Number_Random_Bytes % sizeof(u64_t) == 0,
+		       "The number of random bytes must be divisible into words.");
+	_CTIME_CONST (int) Number_Random_Words = Number_Random_Bytes / sizeof(u64_t);
 	struct {
 		typename CSPRNG_f::Data csprng_data;
-		alignas(u64_t) u8_t     random_bytes  [Number_Random_Bytes];
+		u64_t                   random_bytes  [Number_Random_Words];
 		u8_t                    entropy_bytes [Entropy_Buffer_Bytes];
 		u8_t                    password      [Password_Buffer_Bytes];
 	} crypto;
-	static_assert (Number_Random_Bytes % sizeof(u64_t) == 0);
 	LOCK_MEMORY (&crypto,sizeof(crypto));
 	CSPRNG_f::initialize_seed( &crypto.csprng_data );
 
+	process_arguments_( c_arg_map );
 	// Fill the symbol table with the correct symbols according to what we got from the command-line arguments.
 	set_character_table_();
 	// Seed the RNG with additional entropy if specified to do so from the command-line arguments.
@@ -46,11 +57,11 @@ Password_Generator::Password_Generator (int const argc, char const *argv[])
 	// Generate enough randomness to produce the number of characters needed.
 	{
 	CSPRNG_f::get( &crypto.csprng_data,
-		       crypto.random_bytes,
+		       reinterpret_cast<u8_t*>(crypto.random_bytes),
 		       Number_Random_Bytes );
 	}
 	// Process the generated randomness into a password using the generated character_table.
-	int const size = generate_password_ ( crypto.password, reinterpret_cast<u64_t*>(crypto.random_bytes) );
+	int const size = generate_password_ ( crypto.password, crypto.random_bytes );
 	// Output the pseudorandomly generated password.
 	if (use_formatting) {
 		_CTIME_CONST(int) Chars_Per_Block = 5;
@@ -84,6 +95,7 @@ Password_Generator::Password_Generator (int const argc, char const *argv[])
 	UNLOCK_MEMORY (&crypto,sizeof(crypto));
 } /* constructor */
 
+#if 0
 void Password_Generator::process_arguments_ (Arg_Map_t &&arg_map)
 {
 	if (arg_map.size() < 2) {
@@ -116,8 +128,6 @@ void Password_Generator::process_arguments_ (Arg_Map_t &&arg_map)
 		} else if (arg_map[ i ].first == "-E" || arg_map[ i ].first == "--entropy") {
 			supplement_entropy = true;
 		} else {
-			if (!arg_map[ i ].first.empty() && number.empty()) {
-				number = std::move( arg_map[ i ].first );
 			}
 			else if (!arg_map[ i ].second.empty() && number.empty()) {
 				number = std::move( arg_map[ i ].second );
@@ -126,6 +136,78 @@ void Password_Generator::process_arguments_ (Arg_Map_t &&arg_map)
 	}
 	process_pw_size_( number );
 } /* process_arguments_(Arg_Map_t&&) */
+#else
+void Password_Generator::process_arguments_ (C_Argument_Map &c_arg_map)
+{
+	int const count = c_arg_map.count;
+	if( count == 0 )
+		errx( "Error: Called with no arguments.\n" );
+	for( int i = 0; i < count; ++i ) {
+		if( c_arg_map.c_strings[ i ] ) {
+			if( c_arg_map.argument_cmp( i, "-h"    , (sizeof("-h")     - 1) ) ||
+			    c_arg_map.argument_cmp( i, "--help", (sizeof("--help") - 1) ) )
+			{
+				c_arg_map.c_strings[ i ] = nullptr;
+				print_help_();
+				std::exit( EXIT_SUCCESS );
+			} else
+			if( c_arg_map.argument_cmp( i, "-l"     , (sizeof("-l")      - 1) ) ||
+			    c_arg_map.argument_cmp( i, "--lower", (sizeof("--lower") - 1) ) )
+			{
+				c_arg_map.c_strings[ i ] = nullptr;
+				use_lowercase = true;
+			} else
+			if( c_arg_map.argument_cmp( i, "-u"     , (sizeof("-u")      - 1) ) ||
+			    c_arg_map.argument_cmp( i, "--upper", (sizeof("--upper") - 1) ) )
+			{
+				c_arg_map.c_strings[ i ] = nullptr;
+				use_uppercase = true;
+			} else
+			if( c_arg_map.argument_cmp( i, "-d"     , (sizeof("-d")      - 1) ) ||
+			    c_arg_map.argument_cmp( i, "--digit", (sizeof("--digit") - 1) ) )
+			{
+				c_arg_map.c_strings[ i ] = nullptr;
+				use_digits = true;
+			} else
+			if( c_arg_map.argument_cmp( i, "-s"      , (sizeof("-s")       - 1) ) ||
+			    c_arg_map.argument_cmp( i, "--symbol", (sizeof("--symbol") - 1) ) )
+			{
+				c_arg_map.c_strings[ i ] = nullptr;
+				use_symbols = true;
+			} else
+			if( c_arg_map.argument_cmp( i, "-f"      , (sizeof("-f")       - 1) ) ||
+			    c_arg_map.argument_cmp( i, "--format", (sizeof("--format") - 1) ) )
+			{
+				c_arg_map.c_strings[ i ] = nullptr;
+				use_formatting = true;
+			} else
+			if( c_arg_map.argument_cmp( i, "-a"   , (sizeof("-a")    - 1) ) ||
+			    c_arg_map.argument_cmp( i, "--all", (sizeof("--all") - 1) ) )
+			{
+				c_arg_map.c_strings[ i ] = nullptr;
+				use_lowercase = true;
+				use_uppercase = true;
+				use_digits = true;
+				use_symbols = true;
+			} else
+			if( c_arg_map.argument_cmp( i, "-E", (sizeof("-E") - 1) ) ) {
+				c_arg_map.c_strings[ i ] = nullptr;
+				supplement_entropy = true;
+			} else {
+#if 0
+				c_arg_map.c_strings[ i ] = nullptr;
+				if( c_arg_map.next_string_is_valid( i ) ) {
+					++i;
+					process_pw_size_( c_arg_map.c_strings[ i ], static_cast<int>(c_arg_map.sizes[ i ]) );
+				}
+#else
+				process_pw_size_( c_arg_map.c_strings[ i ], static_cast<int>(c_arg_map.sizes[ i ]) );
+#endif
+			}
+		}
+	}
+}
+#endif
 void Password_Generator::print_help_ ()
 {
 	_CTIME_CONST(auto) Help_String = "Usage: 3gen [-h] [-l] [-u] [-d] [-s] [-a] [-f] [-E] Number_Characters\n"
@@ -239,8 +321,13 @@ void Password_Generator::supplement_entropy_ (typename CSPRNG_f::Data *csprng_da
 	CSPRNG_f::reseed( csprng_data, hash );
 
 } /* supplement_entropy_(CSPRNG_t&,Skein_t&,u8_t*) */
+#if 0
 void Password_Generator::process_pw_size_ (std::string &number)
+#else
+void Password_Generator::process_pw_size_ (char const *number, int const size)
+#endif
 {
+#if 0
 	// Force it to be a number representing the requested password size.
 	static_assert (Max_Password_Length == 125);
 	_CTIME_CONST(int) Max_Chars = 3;
@@ -259,6 +346,32 @@ void Password_Generator::process_pw_size_ (std::string &number)
 	} else {
 		errx( "Error: Only integer inputs allowed for specifying maximum password size.\n" );
 	}
+#else
+	if( size > 3 )
+		errx( "Error: Maximum password size is 125 characters.\n" );
+	else if( size < 1 )
+		errx( "Error: Minimum password size is 1 character.\n" );
+	if( temp_cstr != nullptr )
+		errx( "Error: temp_cstr not already nullptr.\n" );
+	temp_cstr = static_cast<char*>(std::malloc( size + 1 ));
+	if( temp_cstr == nullptr )
+		errx( Generic_Error::Alloc_Failure );
+	{
+		std::memcpy( temp_cstr, number, (size + 1) );
+		int num_digits = shift_left_digits( temp_cstr, size );
+		if( num_digits < 1 || num_digits > 3)
+			errx( "Error: Minimum password size is 1 character; maximum password size is 125 characters.\n" );
+		int size = std::atoi( temp_cstr );
+		if( size >= 1 && size <= Max_Password_Length )
+			requested_password_size = size;
+		else {
+			static_assert (Max_Password_Length == 125);
+			errx( "Error: Minimum password size is 1 character; maximum password size is 125 characters.\n" );
+		}
+	}
+	std::free( temp_cstr );
+	temp_cstr = nullptr;
+#endif
 } /* process_pw_size(std::string&) */
 #undef PROMPT
 #undef UNLOCK_MEMORY

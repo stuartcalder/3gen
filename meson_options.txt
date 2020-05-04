@@ -1,0 +1,2 @@
+
+option('enable_debugging_symbols', type: 'boolean', value: false)
