@@ -16,7 +16,7 @@ main (int const argc, char const *argv[])
 
 	SSC_OPENBSD_UNVEIL ("/usr","rx");
 	SSC_OPENBSD_UNVEIL (nullptr,nullptr);
-	SSC_OPENBSD_PLEDGE ("stdio tty",nullptr);
+	SSC_OPENBSD_PLEDGE ("stdio rpath tty",nullptr);
 
 	C_Argument_Map c_arg_map{ argc, argv };
 
