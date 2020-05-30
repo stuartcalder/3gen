@@ -8,18 +8,15 @@
 
 #include <ssc/general/macros.hh>
 #include <ssc/general/integers.hh>
-#if 0
-#	include <ssc/general/arg_mapping.hh>
-#else
-#	include <ssc/general/c_argument_map.hh>
-#endif
+#include <ssc/general/c_argument_map.hh>
 #include <ssc/crypto/operations.hh>
 #include <ssc/crypto/skein_csprng_f.hh>
 #include <ssc/interface/terminal.hh>
 
 using namespace ssc::ints;
 
-class _PUBLIC Password_Generator
+class SSC_PUBLIC
+Password_Generator
 {
 	public:
 		static_assert (CHAR_BIT == 8);
@@ -37,13 +34,10 @@ class _PUBLIC Password_Generator
 			Number_Symbols = 32,
 			Number_All_Characters = Number_Lowercase + Number_Uppercase + Number_Digits + Number_Symbols
 		};
-		_CTIME_CONST(u64_t) Upper_Limit = (std::numeric_limits<u64_t>::max)() - Number_All_Characters;
+		static constexpr u64_t Upper_Limit = (std::numeric_limits<u64_t>::max)() - Number_All_Characters;
 
 		using Skein_f     = ssc::Skein_F<Algorithm_Bits>;
 		using CSPRNG_f    = ssc::Skein_CSPRNG_F<Algorithm_Bits>;
-#if 0
-		using Arg_Map_t   = ssc::Arg_Mapping::Arg_Map_t;
-#endif
 
 		Password_Generator () = delete;
 		Password_Generator (ssc::C_Argument_Map &);
@@ -59,20 +53,23 @@ class _PUBLIC Password_Generator
 		int number_characters = 0;
 		char *temp_cstr = nullptr;
 
-#if 0
-		void process_arguments_ (Arg_Map_t &&);
-#else
-		void process_arguments_ (ssc::C_Argument_Map &);
-#endif
-		void print_help_ ();
-		void set_character_table_ ();
-		int generate_password_ (u8_t *password, u64_t const *random_words);
-		void supplement_entropy_ (typename CSPRNG_f::Data *csprng_data, u8_t *buffer);
-#if 0
-		void process_pw_size_ (std::string &number);
-#else
-		void process_pw_size_ (char const *, int const);
-#endif
+		void
+		process_arguments_ (ssc::C_Argument_Map &);
+
+		void
+		print_help_ ();
+
+		void
+		set_character_table_ ();
+
+		int
+		generate_password_ (u8_t *password, u64_t const *random_words);
+
+		void
+		supplement_entropy_ (typename CSPRNG_f::Data *csprng_data, u8_t *buffer);
+
+		void
+		process_pw_size_ (char const *, int const);
 };
 
 

@@ -10,11 +10,12 @@
 #include <ssc/general/integers.hh>
 
 using namespace ssc;
-int main (int const argc, char const *argv[])
+int
+main (int const argc, char const *argv[])
 {
 
-	_OPENBSD_UNVEIL( "/usr", "rx" );
-	_OPENBSD_UNVEIL( nullptr, nullptr );
+	SSC_OPENBSD_UNVEIL( "/usr", "rx" );
+	SSC_OPENBSD_UNVEIL( nullptr, nullptr );
 
 	C_Argument_Map c_arg_map{ argc, argv };
 
