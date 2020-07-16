@@ -6,16 +6,15 @@
 #include <cstdio>
 #include <limits>
 
-#include <ssc/general/macros.hh>
-#include <ssc/general/integers.hh>
+#include <shim/macros.h>
+#include <shim/operations.h>
+
 #include <ssc/general/c_argument_map.hh>
-#include <ssc/crypto/operations.hh>
 #include <ssc/crypto/skein_csprng_f.hh>
-#include <ssc/interface/terminal.hh>
 
 using namespace ssc::ints;
 
-class SSC_PUBLIC
+class SHIM_PUBLIC
 Password_Generator
 {
 	public:
@@ -25,7 +24,7 @@ Password_Generator
 			Algorithm_Bytes = Algorithm_Bits / CHAR_BIT,
 			Max_Password_Length = 125,
 			Password_Buffer_Bytes = Max_Password_Length + 1,
-			Number_Random_Bytes = Password_Buffer_Bytes * sizeof(u64_t),
+			Number_Random_Bytes = Password_Buffer_Bytes * sizeof(uint64_t),
 			Max_Entropy_Length = 120,
 			Entropy_Buffer_Bytes = Max_Entropy_Length + 1 + Algorithm_Bytes,
 			Number_Lowercase = 26,
@@ -34,7 +33,7 @@ Password_Generator
 			Number_Symbols = 32,
 			Number_All_Characters = Number_Lowercase + Number_Uppercase + Number_Digits + Number_Symbols
 		};
-		static constexpr u64_t Upper_Limit = (std::numeric_limits<u64_t>::max)() - Number_All_Characters;
+		static constexpr uint64_t Upper_Limit = (std::numeric_limits<uint64_t>::max)() - Number_All_Characters;
 
 		using Skein_f     = ssc::Skein_F<Algorithm_Bits>;
 		using CSPRNG_f    = ssc::Skein_CSPRNG_F<Algorithm_Bits>;
@@ -42,7 +41,7 @@ Password_Generator
 		Password_Generator () = delete;
 		Password_Generator (ssc::C_Argument_Map &);
 	private:
-		u8_t character_table [Number_All_Characters];
+		uint8_t character_table [Number_All_Characters];
 		bool use_lowercase = false;
 		bool use_uppercase = false;
 		bool use_digits = false;
@@ -63,13 +62,13 @@ Password_Generator
 		set_character_table_ ();
 
 		int
-		generate_password_ (u8_t *password, u64_t const *random_words);
+		generate_password_ (uint8_t * SHIM_RESTRICT password, uint64_t const * SHIM_RESTRICT random_words);
 
 		void
-		supplement_entropy_ (typename CSPRNG_f::Data *csprng_data, u8_t *buffer);
+		supplement_entropy_ (typename CSPRNG_f::Data * SHIM_RESTRICT csprng_data, uint8_t * SHIM_RESTRICT buffer);
 
 		void
-		process_pw_size_ (char const *, int const);
+		process_pw_size_ (char const * SHIM_RESTRICT, int const);
 };
 
 
