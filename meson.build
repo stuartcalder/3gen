@@ -1,69 +1,76 @@
-# Define project.
-project('3gen', 'cpp', default_options: ['cpp_std=c++17', 'strip=true', 'buildtype=release',
-                                   	 'optimization=3', 'cpp_eh=none'])
-# Get C++ compiler.
-cc = meson.get_compiler('cpp')
-# Get the host's operating system.
+project('3gen', 'c', default_options: ['c_std=c18', 'optimization=3', 'buildtype=release', 'strip=true'])
+
+_PROJECT = '3gen'
+_LANG = 'c'
+
+_UNIXLIKE_OPERATING_SYSTEMS  = ['openbsd', 'freebsd', 'netbsd', 'darwin', 'linux']
+_SUPPORTED_OPERATING_SYSTEMS = _UNIXLIKE_OPERATING_SYSTEMS + ['windows']
+_GCC_COMPATIBLE_COMPILERS    = ['gcc', 'clang']
+_SUPPORTED_COMPILERS         = _GCC_COMPATIBLE_COMPILERS + ['msvc']
+
+compiler = meson.get_compiler(_LANG)
 os = host_machine.system()
-# Default source files.
-source    = ['main.cc', 'password_generator.cc']
-include   = []
-lib       = []
-depends   = []
-cpp_flags = []
-is_gcc_compatible = (cc.get_id() == 'gcc' or cc.get_id() == 'clang')
 
-# The define flag prefix is different on Windows with MSVC compiler.
-if os == 'windows' and cc.get_id() == 'msvc'
-	_Define_Flag_Prefix = '/D'
+assert (os in _SUPPORTED_OPERATING_SYSTEMS, 'You are trying to build symm using an unsupported operating system!')
+assert (compiler.get_id() in _SUPPORTED_COMPILERS, 'You are trying to build symm using an unsupported compiler!')
+
+if os == 'windows' and compiler.get_id() == 'msvc'
+	_D_PREFIX = '/D'
 else
-	_Define_Flag_Prefix = '-D'
+	_D_PREFIX = '-D'
 endif
 
-# Mac OSX
-if   os == 'darwin'
-	# On OSX, we use memset_s to securely zero over memory, thus we must define this macro.
-	_flag = _Define_Flag_Prefix + '__STDC_WANT_LIB_EXT1__=1'
-	cpp_flags += _flag
-endif
-# BSD OS's
-if   os == 'openbsd' or os == 'freebsd' or os == 'darwin'
-	include += '/usr/local/include'
-	lib     += '/usr/local/lib'
-	depends += cc.find_library('ncurses')
-	depends += cc.find_library('ssc', dirs: lib)
-# GNU/Linux
-elif os == 'linux'
-	if cc.get_id() == 'gcc'
-		cpp_flags += '-flto'
-	endif
-	include += '/usr/include'
-	depends += cc.find_library('ssc')
-	depends += cc.find_library('ncurses')
-	depends += cc.find_library('tinfo')
-# Win64
-elif os == 'windows'
-	include += 'C:/include'
-	lib     += 'C:/lib'
-	depends += cc.find_library('bcrypt')
-	depends += cc.find_library('ssc', static: true, dirs: lib)
-	_flag      = _Define_Flag_Prefix + 'SSC_IMPORT_STATIC'
-	cpp_flags += _flag
-else
-	assert(false)
-endif
-if is_gcc_compatible
-	if get_option('enable_debugging_symbols')
-		cpp_flags += '-g'
-	endif
+src = [
+    'args.c',
+    'threegen.c',
+    'main.c'
+  ]
+# Setup these empty arrays that we will be appending to depending on OS, etc.
+lib_deps   = []
+lang_flags = []
+inc_dir    = []
+# Determine flags to pass to gcc-compatible compilers.
+gcc_compatible_flags = [
+  '-fvisibility=hidden',
+  '-fstrict-aliasing',
+  '-Wall',
+  '-funroll-loops'
+  ]
+if os != 'netbsd' and compiler.get_id() != 'clang'
+  gcc_compatible_flags += '-flto'
 endif
 
-if os != 'windows'
-	executable('3gen', sources: source, dependencies: depends,
-		   include_directories: include, install: true,
-		   cpp_args: cpp_flags)
+if os == 'darwin' # On OSX we require __STDC_WANT_LIB_EXT1__ to be defined as 1, for access to memset_s.
+  _flag = _D_PREFIX + '__STDC_WANT_LIB_EXT1__=1'
+  lang_flags += _flag
+endif
+
+if os in _UNIXLIKE_OPERATING_SYSTEMS
+  if get_option('native_optimize')
+    lang_flags += '-march=native'
+  endif
+  if compiler.get_id() in _GCC_COMPATIBLE_COMPILERS
+    lang_flags += gcc_compatible_flags
+  endif
+endif
+
+if os in _UNIXLIKE_OPERATING_SYSTEMS and compiler.get_id() in _GCC_COMPATIBLE_COMPILERS
+  lang_flags += gcc_compatible_flags
+endif
+
+lib_deps += compiler.find_library('shim')
+lib_deps += compiler.find_library('symm')
+
+inc_dir += '..'
+
+
+if os == 'windows'
+  executable('3gen', sources: src, dependencies: lib_deps,
+	     c_args: lang_flags, include_directories: inc_dir,
+	     install: true, install_dir: 'C:/bin')
 else
-	executable('3gen', sources: source, dependencies: depends,
-	           include_directories: include, install: true,
-		   cpp_args: cpp_flags, install_dir: 'C:/bin')
+  assert (os in _UNIXLIKE_OPERATING_SYSTEMS, 'This branch covers unixlike operating systems.')
+  executable('3gen', sources: src, dependencies: lib_deps,
+	     c_args: lang_flags, include_directories: inc_dir,
+	     install: true )
 endif
