@@ -78,7 +78,7 @@ floating_parser (char const * discard) {
 
 #define DEFINE_HANDLER_(name) \
 	void \
-	name##_handler (char ** str_arr, void * SHIM_RESTRICT v_ctx)
+	name##_handler (char ** str_arr, int const str_cnt, void * SHIM_RESTRICT v_ctx)
 
 DEFINE_HANDLER_ (h) {
 	print_help();
@@ -86,7 +86,7 @@ DEFINE_HANDLER_ (h) {
 }
 
 DEFINE_HANDLER_ (help) {
-	h_handler( NULL, NULL );
+	h_handler( NULL, 0, NULL );
 }
 
 DEFINE_HANDLER_ (l) {
@@ -94,7 +94,7 @@ DEFINE_HANDLER_ (l) {
 }
 
 DEFINE_HANDLER_ (lower) {
-	l_handler( NULL, v_ctx );
+	l_handler( NULL, 0, v_ctx );
 }
 
 DEFINE_HANDLER_ (u) {
@@ -102,7 +102,7 @@ DEFINE_HANDLER_ (u) {
 }
 
 DEFINE_HANDLER_ (upper) {
-	u_handler( NULL, v_ctx );
+	u_handler( NULL, 0, v_ctx );
 }
 
 DEFINE_HANDLER_ (d) {
@@ -110,7 +110,7 @@ DEFINE_HANDLER_ (d) {
 }
 
 DEFINE_HANDLER_ (digit) {
-	d_handler( NULL, v_ctx );
+	d_handler( NULL, 0, v_ctx );
 }
 
 DEFINE_HANDLER_ (s) {
@@ -118,18 +118,18 @@ DEFINE_HANDLER_ (s) {
 }
 
 DEFINE_HANDLER_ (symbol) {
-	s_handler( NULL, v_ctx );
+	s_handler( NULL, 0, v_ctx );
 }
 
 DEFINE_HANDLER_ (a) {
-	l_handler( NULL, v_ctx );
-	u_handler( NULL, v_ctx );
-	d_handler( NULL, v_ctx );
-	s_handler( NULL, v_ctx );
+	l_handler( NULL, 0, v_ctx );
+	u_handler( NULL, 0, v_ctx );
+	d_handler( NULL, 0, v_ctx );
+	s_handler( NULL, 0, v_ctx );
 }
 
 DEFINE_HANDLER_ (all) {
-	a_handler( NULL, v_ctx );
+	a_handler( NULL, 0, v_ctx );
 }
 
 DEFINE_HANDLER_ (f) {
@@ -137,7 +137,7 @@ DEFINE_HANDLER_ (f) {
 }
 
 DEFINE_HANDLER_ (format) {
-	f_handler( NULL, v_ctx );
+	f_handler( NULL, 0, v_ctx );
 }
 
 DEFINE_HANDLER_ (E) {
@@ -145,7 +145,7 @@ DEFINE_HANDLER_ (E) {
 }
 
 DEFINE_HANDLER_ (entropy) {
-	E_handler( NULL, v_ctx );
+	E_handler( NULL, 0, v_ctx );
 }
 
 #define ERR_MIN_PW_SIZE_PROMPT_ "Error: Minimum password size is 1 character.\n"

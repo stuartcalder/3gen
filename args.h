@@ -13,7 +13,7 @@ floating_parser (char const *);
 
 #define PROTOTYPE_HANDLER_(prefix) \
 	void \
-	prefix##_handler (char **, void * SHIM_RESTRICT)
+	prefix##_handler (char **, int const, void * SHIM_RESTRICT)
 
 PROTOTYPE_HANDLER_ (h);
 PROTOTYPE_HANDLER_ (help);
