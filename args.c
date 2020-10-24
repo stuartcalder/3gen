@@ -8,7 +8,7 @@
 
 Shim_Arg_Handler_t *
 short_parser (char const * str) {
-	int const str_size = strlen( str );
+	size_t const str_size = strlen( str );
 	switch( str_size ) {
 		case 2:
 			switch( str[ 1 ] ) {
@@ -38,7 +38,7 @@ short_parser (char const * str) {
 
 Shim_Arg_Handler_t *
 long_parser (char const * str) {
-	int const str_size = strlen( str );
+	size_t const str_size = strlen( str );
 	switch( str_size ) {
 		case 5:
 			if( strcmp( str, "--all" ) == 0 )

@@ -135,17 +135,10 @@ void
 threegen (int argc, char ** argv,
 	  Threegen * SHIM_RESTRICT ctx)
 {
-#if 0
-#define DEBUG_OUT_(...) \
-	fprintf( stderr, __VA_ARGS__ )
-#else
-#define DEBUG_OUT_(...) /*nil*/
-#endif
 	Crypto_ crypto;
 	symm_csprng_init( &crypto.csprng );
 	memset( ctx, 0, sizeof(*ctx) );
 	shim_process_args( argc, argv, short_parser, long_parser, floating_parser, ctx );
-	// Understood
 	set_character_table( ctx );
 	if( ctx->supplement_entropy )
 		supplement_entropy_( &crypto.csprng, crypto.ent_bytes );
@@ -153,9 +146,6 @@ threegen (int argc, char ** argv,
 			 (uint8_t *)crypto.rand_bytes,
 			 sizeof(crypto.rand_bytes) );
 	int const size = generate_password_( ctx, crypto.passwd, crypto.rand_bytes );
-	DEBUG_OUT_ ("Password size: %d\n", size);
-	DEBUG_OUT_ ("This makes no goddamn sense\n");
-	#if 1
 	if( ctx->use_formatting ) {
 		enum {
 			CHARS_PER_BLOCK_ = 5,
@@ -183,9 +173,7 @@ threegen (int argc, char ** argv,
 		fwrite( crypto.passwd, 1, size, stdout );
 		putchar( '\n' );
 	}
-	#endif
 	shim_secure_zero( &crypto, sizeof(crypto) );
-	DEBUG_OUT_ ("Password size: %d\n", size);
 }
 
 
