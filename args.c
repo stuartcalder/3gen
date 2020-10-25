@@ -76,6 +76,19 @@ floating_parser (char const * discard) {
 	return password_size_handler;
 }
 
+Shim_Arg_Parser_t *
+arg_processor (char const * str, void * SHIM_RESTRICT v_ctx) {
+	int type = shim_argtype( str );
+	switch( type ) {
+		case SHIM_ARGTYPE_SHORT:
+			return short_parser;
+		case SHIM_ARGTYPE_LONG:
+			return long_parser;
+		default:
+			return floating_parser;
+	}
+}
+
 #define DEFINE_HANDLER_(name) \
 	void \
 	name##_handler (char ** str_arr, int const str_cnt, void * SHIM_RESTRICT v_ctx)

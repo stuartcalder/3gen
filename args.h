@@ -11,6 +11,9 @@ long_parser (char const *);
 Shim_Arg_Handler_t *
 floating_parser (char const *);
 
+Shim_Arg_Parser_t *
+arg_processor (char const *, void * SHIM_RESTRICT);
+
 #define PROTOTYPE_HANDLER_(prefix) \
 	void \
 	prefix##_handler (char **, int const, void * SHIM_RESTRICT)
