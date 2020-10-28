@@ -41,6 +41,8 @@ typedef struct SHIM_PUBLIC {
 	int     num_chars;
 } Threegen;
 
+SHIM_BEGIN_DECLS
+
 static inline void
 print_help () {
 	puts( 
@@ -63,5 +65,6 @@ set_character_table (Threegen *);
 void
 threegen (int, char **, Threegen * SHIM_RESTRICT);
 
+SHIM_END_DECLS
 
 #endif /* ~ THREEGEN_H */

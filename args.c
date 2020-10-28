@@ -98,40 +98,20 @@ DEFINE_HANDLER_ (h) {
 	exit( EXIT_SUCCESS );
 }
 
-DEFINE_HANDLER_ (help) {
-	h_handler( NULL, 0, NULL );
-}
-
 DEFINE_HANDLER_ (l) {
 	((Threegen *)v_ctx)->use_lcase = true;
-}
-
-DEFINE_HANDLER_ (lower) {
-	l_handler( NULL, 0, v_ctx );
 }
 
 DEFINE_HANDLER_ (u) {
 	((Threegen *)v_ctx)->use_ucase = true;
 }
 
-DEFINE_HANDLER_ (upper) {
-	u_handler( NULL, 0, v_ctx );
-}
-
 DEFINE_HANDLER_ (d) {
 	((Threegen *)v_ctx)->use_digits = true;
 }
 
-DEFINE_HANDLER_ (digit) {
-	d_handler( NULL, 0, v_ctx );
-}
-
 DEFINE_HANDLER_ (s) {
 	((Threegen *)v_ctx)->use_symbols = true;
-}
-
-DEFINE_HANDLER_ (symbol) {
-	s_handler( NULL, 0, v_ctx );
 }
 
 DEFINE_HANDLER_ (a) {
@@ -141,24 +121,12 @@ DEFINE_HANDLER_ (a) {
 	s_handler( NULL, 0, v_ctx );
 }
 
-DEFINE_HANDLER_ (all) {
-	a_handler( NULL, 0, v_ctx );
-}
-
 DEFINE_HANDLER_ (f) {
 	((Threegen *)v_ctx)->use_formatting = true;
 }
 
-DEFINE_HANDLER_ (format) {
-	f_handler( NULL, 0, v_ctx );
-}
-
 DEFINE_HANDLER_ (E) {
 	((Threegen *)v_ctx)->supplement_entropy = true;
-}
-
-DEFINE_HANDLER_ (entropy) {
-	E_handler( NULL, 0, v_ctx );
 }
 
 #define ERR_MIN_PW_SIZE_PROMPT_ "Error: Minimum password size is 1 character.\n"
