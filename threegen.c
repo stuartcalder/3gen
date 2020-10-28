@@ -174,12 +174,5 @@ threegen (int argc, char ** argv,
 		putchar( '\n' );
 	}
 	shim_secure_zero( &crypto, sizeof(crypto) );
+	shim_secure_zero( ctx, sizeof(*ctx) );
 }
-
-
-
-
-
-
-
-
