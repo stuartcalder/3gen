@@ -28,12 +28,9 @@ short_parser (char const * str) {
 					return a_handler;
 				case 'E':
 					return E_handler;
-				default:
-					return NULL;
 			}
-		default:
-			return NULL;
 	}
+	return NULL;
 }
 
 Shim_Arg_Handler_t *
@@ -43,11 +40,11 @@ long_parser (char const * str) {
 		case 5:
 			if( strcmp( str, "--all" ) == 0 )
 				return all_handler;
-			return NULL;
+			break;
 		case 6:
 			if( strcmp( str, "--help" ) == 0 )
 				return help_handler;
-			return NULL;
+			break;
 		case 7:
 			if( strcmp( str, "--lower" ) == 0 )
 				return lower_handler;
@@ -55,20 +52,19 @@ long_parser (char const * str) {
 				return upper_handler;
 			if( strcmp( str, "--digit" ) == 0 )
 				return digit_handler;
-			return NULL;
+			break;
 		case 8:
 			if( strcmp( str, "--symbol" ) == 0 )
 				return symbol_handler;
 			if( strcmp( str, "--format" ) == 0 )
 				return format_handler;
-			return NULL;
+			break;
 		case 9:
 			if( strcmp( str, "--entropy" ) == 0 )
 				return entropy_handler;
-			return NULL;
-		default:
-			return NULL;
+			break;
 	}
+	return NULL;
 }
 
 Shim_Arg_Handler_t *

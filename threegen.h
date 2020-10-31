@@ -29,7 +29,7 @@
 #define THREEGEN_NUM_ALL_CHARS		(THREEGEN_NUM_LCASE + THREEGEN_NUM_UCASE + THREEGEN_NUM_DIGITS + THREEGEN_NUM_SYMBOLS)
 #define THREEGEN_UPPER_LIMIT		(UINT64_MAX - THREEGEN_NUM_ALL_CHARS)
 
-typedef struct SHIM_PUBLIC {
+typedef struct {
 	uint8_t character_table [THREEGEN_NUM_ALL_CHARS];
 	bool    use_lcase;
 	bool    use_ucase;
