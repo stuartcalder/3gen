@@ -1,1 +1,2 @@
 option('native_optimize', type: 'boolean', value: false)
+option('strict_arg_processing', type: 'boolean', value: true)

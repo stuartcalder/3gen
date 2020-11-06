@@ -6,6 +6,12 @@
 #define STRINGIFY_(text) \
 	STRINGIFY_IMPL_ (text)
 
+#ifdef THREEGEN_EXT_STRICT_ARG_PROCESSING
+#	define HANDLE_INVALID_ARG_(arg) SHIM_ERRX ("Error: Invalid argument (%s)\n", arg)
+#else
+#	define HANDLE_INVALID_ARG_(arg) /* Nil */
+#endif
+
 Shim_Arg_Handler_t *
 short_parser (char const * str) {
 	size_t const str_size = strlen( str );
@@ -30,6 +36,7 @@ short_parser (char const * str) {
 					return E_handler;
 			}
 	}
+	HANDLE_INVALID_ARG_ (str);
 	return NULL;
 }
 
@@ -64,6 +71,7 @@ long_parser (char const * str) {
 				return entropy_handler;
 			break;
 	}
+	HANDLE_INVALID_ARG_ (str);
 	return NULL;
 }
 
@@ -80,9 +88,8 @@ arg_processor (char const * str, void * SHIM_RESTRICT v_ctx) {
 			return short_parser;
 		case SHIM_ARGTYPE_LONG:
 			return long_parser;
-		default:
-			return floating_parser;
 	}
+	return floating_parser;
 }
 
 #define DEFINE_HANDLER_(name) \

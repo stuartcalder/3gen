@@ -63,6 +63,11 @@ lib_deps += compiler.find_library('symm')
 
 inc_dir += '..'
 
+if get_option('strict_arg_processing')
+  _flag = _D_PREFIX + 'THREEGEN_EXT_STRICT_ARG_PROCESSING'
+  lang_flags += _flag
+endif
+
 
 if os == 'windows'
   executable('3gen', sources: src, dependencies: lib_deps,
