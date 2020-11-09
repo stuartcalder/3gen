@@ -133,7 +133,7 @@ DEFINE_HANDLER_ (E) {
 }
 
 #define ERR_MIN_PW_SIZE_PROMPT_ "Error: Minimum password size is 1 character.\n"
-#define ERR_MAX_PW_SIZE_PROMPT_ "Error: Maximum password size is " STRINGIFY_ (THREEGEN_MAX_PW_SIZE) ".\n"
+#define ERR_MAX_PW_SIZE_PROMPT_ "Error: Maximum password size is " STRINGIFY_ (THREEGEN_MAX_PW_SIZE) " characters.\n"
 
 DEFINE_HANDLER_ (password_size) {
 	Threegen * ctx = (Threegen *)v_ctx;
@@ -143,9 +143,7 @@ DEFINE_HANDLER_ (password_size) {
 		SHIM_ERRX (ERR_MIN_PW_SIZE_PROMPT_);
 	if( str_size > 3 )
 		SHIM_ERRX (ERR_MAX_PW_SIZE_PROMPT_);
-	char * scratch_str = (char *)malloc( str_size + 1 );
-	if( !scratch_str )
-		SHIM_ERRX (SHIM_ERR_STR_ALLOC_FAILURE);
+	char * scratch_str = (char *)shim_checked_malloc( str_size + 1);
 	{
 		memcpy( scratch_str, str, (str_size + 1) );
 		int num_digits = shim_shift_left_digits( scratch_str, str_size );
@@ -154,10 +152,11 @@ DEFINE_HANDLER_ (password_size) {
 		if( num_digits > 3 )
 			SHIM_ERRX (ERR_MAX_PW_SIZE_PROMPT_);
 		int size = atoi( scratch_str );
-		if( size >= 1 && size <= THREEGEN_MAX_PW_SIZE )
-			ctx->requested_pw_size = size;
-		else
-			SHIM_ERRX ("Error: Invalid password size %d\n", size);
+		if( size < 1 )
+			SHIM_ERRX (ERR_MIN_PW_SIZE_PROMPT_);
+		if( size > THREEGEN_MAX_PW_SIZE )
+			SHIM_ERRX (ERR_MAX_PW_SIZE_PROMPT_);
+		ctx->requested_pw_size = size;
 	}
 	free( scratch_str );
 }

@@ -85,7 +85,7 @@ set_character_table (Threegen * ctx) {
 	STRINGIFY_IMPL_ (text)
 
 #define ENT_PROMPT_ "Please input up to " \
-		    STRINGIFY_ (SHIM_TERM_MAX_PW_SIZE) \
+		    STRINGIFY_ (THREEGEN_MAX_ENT_SIZE) \
 		    " random characters." PROMPT_
 
 static void
@@ -98,7 +98,8 @@ supplement_entropy_ (Symm_CSPRNG * SHIM_RESTRICT csprng,
 	int num_input_chars = shim_term_obtain_password( keyboard_input,
 							 ENT_PROMPT_,
 							 1,
-							 SHIM_TERM_MAX_PW_SIZE );
+							 THREEGEN_MAX_ENT_SIZE,
+							 (THREEGEN_MAX_ENT_SIZE + 1) );
 	shim_term_end();
 	symm_skein512_hash_native( &csprng->ubi512_ctx,
 				   hash,

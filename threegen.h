@@ -21,7 +21,8 @@
  * Use that hard-coded buffer size to determine the maximum number of bytes
  * we can take from stdin to supplement entropy.
  */
-#define THREEGEN_ENT_BUF_SIZE		(SHIM_TERM_MAX_PW_SIZE + 1 + SYMM_THREEFISH512_BLOCK_BYTES)
+#define THREEGEN_MAX_ENT_SIZE		120
+#define THREEGEN_ENT_BUF_SIZE		(THREEGEN_MAX_ENT_SIZE + 1 + SYMM_THREEFISH512_BLOCK_BYTES)
 #define THREEGEN_NUM_LCASE		26
 #define THREEGEN_NUM_UCASE		26
 #define THREEGEN_NUM_DIGITS		10
