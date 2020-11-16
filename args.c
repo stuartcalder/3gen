@@ -143,7 +143,7 @@ DEFINE_HANDLER_ (password_size) {
 		SHIM_ERRX (ERR_MIN_PW_SIZE_PROMPT_);
 	if( str_size > 3 )
 		SHIM_ERRX (ERR_MAX_PW_SIZE_PROMPT_);
-	char * scratch_str = (char *)shim_checked_malloc( str_size + 1);
+	char * scratch_str = (char *)shim_enforce_malloc( str_size + 1 );
 	{
 		memcpy( scratch_str, str, (str_size + 1) );
 		int num_digits = shim_shift_left_digits( scratch_str, str_size );
