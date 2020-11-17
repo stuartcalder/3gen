@@ -41,6 +41,17 @@ typedef struct {
 	int     requested_pw_size;
 	int     num_chars;
 } Threegen;
+#define THREEGEN_NULL_INIT { \
+	.character_table = { 0 }, \
+	.use_lcase = false, \
+	.use_ucase = false, \
+	.use_digits = false, \
+	.use_symbols = false, \
+	.use_formatting = false, \
+	.supplement_entropy = false, \
+	.requested_pw_size = 0, \
+	.num_chars = 0 \
+}
 
 SHIM_BEGIN_DECLS
 
