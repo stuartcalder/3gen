@@ -138,7 +138,6 @@ threegen (int argc, char ** argv,
 {
 	Crypto_ crypto;
 	symm_csprng_init( &crypto.csprng );
-	memset( ctx, 0, sizeof(*ctx) );
 	shim_process_args( argc, argv, arg_processor, ctx );
 	set_character_table( ctx );
 	if( ctx->supplement_entropy )
