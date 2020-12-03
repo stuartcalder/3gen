@@ -10,6 +10,8 @@ _SUPPORTED_COMPILERS         = _GCC_COMPATIBLE_COMPILERS + ['msvc']
 
 compiler = meson.get_compiler(_LANG)
 os = host_machine.system()
+shim_static = get_option('shim_static')
+symm_static = get_option('symm_static')
 
 assert (os in _SUPPORTED_OPERATING_SYSTEMS, 'You are trying to build symm using an unsupported operating system!')
 assert (compiler.get_id() in _SUPPORTED_COMPILERS, 'You are trying to build symm using an unsupported compiler!')
@@ -36,13 +38,18 @@ gcc_compatible_flags = [
   '-Wall',
   '-funroll-loops'
   ]
+if shim_static
+  lang_flags += _D_PREFIX + 'SHIM_EXT_STATIC_LIB'
+endif
+if symm_static
+  lang_flags += _D_PREFIX + 'SYMM_EXT_STATIC_LIB'
+endif
 if os != 'netbsd' and compiler.get_id() != 'clang'
   gcc_compatible_flags += '-flto'
 endif
 
 if os == 'darwin' # On OSX we require __STDC_WANT_LIB_EXT1__ to be defined as 1, for access to memset_s.
-  _flag = _D_PREFIX + '__STDC_WANT_LIB_EXT1__=1'
-  lang_flags += _flag
+  lang_flags += _D_PREFIX + '__STDC_WANT_LIB_EXT1__=1'
 endif
 
 if os in _UNIXLIKE_OPERATING_SYSTEMS
@@ -58,14 +65,19 @@ if os in _UNIXLIKE_OPERATING_SYSTEMS and compiler.get_id() in _GCC_COMPATIBLE_CO
   lang_flags += gcc_compatible_flags
 endif
 
-lib_deps += compiler.find_library('shim')
-lib_deps += compiler.find_library('symm')
+lib_deps += compiler.find_library('shim', static: shim_static)
+lib_deps += compiler.find_library('symm', static: symm_static)
+if shim_static and os in _UNIXLIKE_OPERATING_SYSTEMS
+  lib_deps += compiler.find_library('ncurses')
+  if os == 'linux'
+    lib_deps += compiler.find_library('tinfo')
+  endif
+endif
 
 inc_dir += '..'
 
 if get_option('strict_arg_processing')
-  _flag = _D_PREFIX + 'THREEGEN_EXT_STRICT_ARG_PROCESSING'
-  lang_flags += _flag
+  lang_flags += _D_PREFIX + 'THREEGEN_EXT_STRICT_ARG_PROCESSING'
 endif
 
 

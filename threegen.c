@@ -16,7 +16,7 @@ typedef struct {
 	uint64_t    rand_bytes [THREEGEN_NUM_RAND_WORDS];
 	uint8_t     ent_bytes  [THREEGEN_ENT_BUF_SIZE];
 	uint8_t     passwd     [THREEGEN_PW_BUF_SIZE];
-} Crypto_;
+} Crypto;
 
 void
 set_character_table (Threegen * ctx) {
@@ -136,7 +136,7 @@ void
 threegen (int argc, char ** argv,
 	  Threegen * SHIM_RESTRICT ctx)
 {
-	Crypto_ crypto;
+	Crypto crypto;
 	symm_csprng_init( &crypto.csprng );
 	shim_process_args( argc, argv, arg_processor, ctx );
 	set_character_table( ctx );

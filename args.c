@@ -95,6 +95,7 @@ arg_processor (char const * str, void * SHIM_RESTRICT v_ctx) {
 #define DEFINE_HANDLER_(name) \
 	void \
 	name##_handler (char ** str_arr, int const str_cnt, void * SHIM_RESTRICT v_ctx)
+#define CTX_ ((Threegen *)v_ctx)
 
 DEFINE_HANDLER_ (h) {
 	print_help();
@@ -102,19 +103,19 @@ DEFINE_HANDLER_ (h) {
 }
 
 DEFINE_HANDLER_ (l) {
-	((Threegen *)v_ctx)->use_lcase = true;
+	CTX_->use_lcase = true;
 }
 
 DEFINE_HANDLER_ (u) {
-	((Threegen *)v_ctx)->use_ucase = true;
+	CTX_->use_ucase = true;
 }
 
 DEFINE_HANDLER_ (d) {
-	((Threegen *)v_ctx)->use_digits = true;
+	CTX_->use_digits = true;
 }
 
 DEFINE_HANDLER_ (s) {
-	((Threegen *)v_ctx)->use_symbols = true;
+	CTX_->use_symbols = true;
 }
 
 DEFINE_HANDLER_ (a) {
@@ -125,18 +126,17 @@ DEFINE_HANDLER_ (a) {
 }
 
 DEFINE_HANDLER_ (f) {
-	((Threegen *)v_ctx)->use_formatting = true;
+	CTX_->use_formatting = true;
 }
 
 DEFINE_HANDLER_ (E) {
-	((Threegen *)v_ctx)->supplement_entropy = true;
+	CTX_->supplement_entropy = true;
 }
 
 #define ERR_MIN_PW_SIZE_PROMPT_ "Error: Minimum password size is 1 character.\n"
 #define ERR_MAX_PW_SIZE_PROMPT_ "Error: Maximum password size is " STRINGIFY_ (THREEGEN_MAX_PW_SIZE) " characters.\n"
 
 DEFINE_HANDLER_ (password_size) {
-	Threegen * ctx = (Threegen *)v_ctx;
 	char const * str = *str_arr;
 	size_t const str_size = strlen( str );
 	if( str_size < 1 )
@@ -156,7 +156,7 @@ DEFINE_HANDLER_ (password_size) {
 			SHIM_ERRX (ERR_MIN_PW_SIZE_PROMPT_);
 		if( size > THREEGEN_MAX_PW_SIZE )
 			SHIM_ERRX (ERR_MAX_PW_SIZE_PROMPT_);
-		ctx->requested_pw_size = size;
+		CTX_->requested_pw_size = size;
 	}
 	free( scratch_str );
 }
