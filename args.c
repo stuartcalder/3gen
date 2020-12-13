@@ -92,51 +92,51 @@ arg_processor (char const * str, void * SHIM_RESTRICT v_ctx) {
 	return floating_parser;
 }
 
-#define DEFINE_HANDLER_(name) \
+#define HANDLER_IMPL_(name) \
 	void \
 	name##_handler (char ** str_arr, int const str_cnt, void * SHIM_RESTRICT v_ctx)
 #define CTX_ ((Threegen *)v_ctx)
 
-DEFINE_HANDLER_ (h) {
+HANDLER_IMPL_ (h) {
 	print_help();
 	exit( EXIT_SUCCESS );
 }
 
-DEFINE_HANDLER_ (l) {
+HANDLER_IMPL_ (l) {
 	CTX_->use_lcase = true;
 }
 
-DEFINE_HANDLER_ (u) {
+HANDLER_IMPL_ (u) {
 	CTX_->use_ucase = true;
 }
 
-DEFINE_HANDLER_ (d) {
+HANDLER_IMPL_ (d) {
 	CTX_->use_digits = true;
 }
 
-DEFINE_HANDLER_ (s) {
+HANDLER_IMPL_ (s) {
 	CTX_->use_symbols = true;
 }
 
-DEFINE_HANDLER_ (a) {
-	l_handler( NULL, 0, v_ctx );
-	u_handler( NULL, 0, v_ctx );
-	d_handler( NULL, 0, v_ctx );
-	s_handler( NULL, 0, v_ctx );
+HANDLER_IMPL_ (a) {
+	CTX_->use_lcase   = true;
+	CTX_->use_ucase   = true;
+	CTX_->use_digits  = true;
+	CTX_->use_symbols = true;
 }
 
-DEFINE_HANDLER_ (f) {
+HANDLER_IMPL_ (f) {
 	CTX_->use_formatting = true;
 }
 
-DEFINE_HANDLER_ (E) {
+HANDLER_IMPL_ (E) {
 	CTX_->supplement_entropy = true;
 }
 
 #define ERR_MIN_PW_SIZE_PROMPT_ "Error: Minimum password size is 1 character.\n"
 #define ERR_MAX_PW_SIZE_PROMPT_ "Error: Maximum password size is " STRINGIFY_ (THREEGEN_MAX_PW_SIZE) " characters.\n"
 
-DEFINE_HANDLER_ (password_size) {
+HANDLER_IMPL_ (password_size) {
 	char const * str = *str_arr;
 	size_t const str_size = strlen( str );
 	if( str_size < 1 )
@@ -160,6 +160,3 @@ DEFINE_HANDLER_ (password_size) {
 	}
 	free( scratch_str );
 }
-
-
-

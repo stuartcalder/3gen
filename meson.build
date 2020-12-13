@@ -65,8 +65,14 @@ if os in _UNIXLIKE_OPERATING_SYSTEMS and compiler.get_id() in _GCC_COMPATIBLE_CO
   lang_flags += gcc_compatible_flags
 endif
 
-lib_deps += compiler.find_library('shim', static: shim_static)
-lib_deps += compiler.find_library('symm', static: symm_static)
+if os in ['darwin', 'freebsd', 'openbsd']
+  lib_deps += compiler.find_library('shim', static: shim_static, dirs: '/usr/local/lib')
+  lib_deps += compiler.find_library('symm', static: symm_static, dirs: '/usr/local/lib')
+else
+  lib_deps += compiler.find_library('shim', static: shim_static)
+  lib_deps += compiler.find_library('symm', static: symm_static)
+endif
+
 if shim_static and os in _UNIXLIKE_OPERATING_SYSTEMS
   lib_deps += compiler.find_library('ncurses')
   if os == 'linux'
