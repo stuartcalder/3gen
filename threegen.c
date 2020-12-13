@@ -142,6 +142,7 @@ threegen (int argc, char ** argv,
 	set_character_table( ctx );
 	if( ctx->supplement_entropy )
 		supplement_entropy_( &crypto.csprng, crypto.ent_bytes );
+	SHIM_OPENBSD_PLEDGE ("stdio tty");
 	symm_csprng_get( &crypto.csprng,
 			 (uint8_t *)crypto.rand_bytes,
 			 sizeof(crypto.rand_bytes) );
