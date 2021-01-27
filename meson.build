@@ -68,6 +68,9 @@ endif
 if os in ['darwin', 'freebsd', 'openbsd']
   lib_deps += compiler.find_library('shim', static: shim_static, dirs: '/usr/local/lib')
   lib_deps += compiler.find_library('symm', static: symm_static, dirs: '/usr/local/lib')
+elif os == 'windows'
+  lib_deps += compiler.find_library('shim', static: shim_static, dirs: 'C:\lib')
+  lib_deps += compiler.find_library('symm', static: symm_static, dirs: 'C:\lib')
 else
   lib_deps += compiler.find_library('shim', static: shim_static)
   lib_deps += compiler.find_library('symm', static: symm_static)
