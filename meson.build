@@ -92,7 +92,7 @@ endif
 
 if os == 'windows'
   executable('3gen', sources: src, dependencies: lib_deps,
-	     c_args: lang_flags, include_directories: inc_dir,
+	     c_args: lang_flags, include_directories: 'C:/include',
 	     install: true, install_dir: 'C:/bin')
 else
   assert (os in _UNIXLIKE_OPERATING_SYSTEMS, 'This branch covers unixlike operating systems.')
