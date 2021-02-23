@@ -48,7 +48,7 @@ if os != 'netbsd' and compiler.get_id() != 'clang'
   gcc_compatible_flags += '-flto'
 endif
 
-if os == 'darwin' # On OSX we require __STDC_WANT_LIB_EXT1__ to be defined as 1, for access to memset_s.
+if os == 'darwin' # On MacOS we require __STDC_WANT_LIB_EXT1__ to be defined as 1, for access to memset_s.
   lang_flags += _D_PREFIX + '__STDC_WANT_LIB_EXT1__=1'
 endif
 
