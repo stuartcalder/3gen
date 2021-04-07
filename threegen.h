@@ -29,29 +29,19 @@
 #define THREEGEN_NUM_SYMBOLS		32
 #define THREEGEN_NUM_ALL_CHARS		(THREEGEN_NUM_LCASE + THREEGEN_NUM_UCASE + THREEGEN_NUM_DIGITS + THREEGEN_NUM_SYMBOLS)
 #define THREEGEN_UPPER_LIMIT		(UINT64_MAX - THREEGEN_NUM_ALL_CHARS)
+#define THREEGEN_USE_LCASE		0b00000001
+#define THREEGEN_USE_UCASE		0b00000010
+#define THREEGEN_USE_DIGITS		0b00000100
+#define THREEGEN_USE_SYMBOLS		0b00001000
+#define THREEGEN_USE_FORMATTING		0b00010000
+#define THREEGEN_GET_ENTROPY		0b00100000
 
 typedef struct {
 	uint8_t character_table [THREEGEN_NUM_ALL_CHARS];
-	bool    use_lcase;
-	bool    use_ucase;
-	bool    use_digits;
-	bool    use_symbols;
-	bool    use_formatting;
-	bool    supplement_entropy;
+	int     flags;
 	int     requested_pw_size;
 	int     num_chars;
 } Threegen;
-#define THREEGEN_NULL_INIT { \
-	.character_table = { 0 }, \
-	.use_lcase = false, \
-	.use_ucase = false, \
-	.use_digits = false, \
-	.use_symbols = false, \
-	.use_formatting = false, \
-	.supplement_entropy = false, \
-	.requested_pw_size = 0, \
-	.num_chars = 0 \
-}
 
 SHIM_BEGIN_DECLS
 

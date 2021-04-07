@@ -103,34 +103,35 @@ HANDLER_IMPL_ (h) {
 }
 
 HANDLER_IMPL_ (l) {
-	CTX_->use_lcase = true;
+	CTX_->flags |= THREEGEN_USE_LCASE;
 }
 
 HANDLER_IMPL_ (u) {
-	CTX_->use_ucase = true;
+	CTX_->flags |= THREEGEN_USE_UCASE;
 }
 
 HANDLER_IMPL_ (d) {
-	CTX_->use_digits = true;
+	CTX_->flags |= THREEGEN_USE_DIGITS;
 }
 
+#define USE_ALL_CHARS_ (THREEGEN_USE_LCASE   | \
+			THREEGEN_USE_UCASE   | \
+			THREEGEN_USE_DIGITS  | \
+			THREEGEN_USE_SYMBOLS)
 HANDLER_IMPL_ (s) {
-	CTX_->use_symbols = true;
+	CTX_->flags |= THREEGEN_USE_SYMBOLS;
 }
 
 HANDLER_IMPL_ (a) {
-	CTX_->use_lcase   = true;
-	CTX_->use_ucase   = true;
-	CTX_->use_digits  = true;
-	CTX_->use_symbols = true;
+	CTX_->flags |= USE_ALL_CHARS_;
 }
 
 HANDLER_IMPL_ (f) {
-	CTX_->use_formatting = true;
+	CTX_->flags |= THREEGEN_USE_FORMATTING;
 }
 
 HANDLER_IMPL_ (E) {
-	CTX_->supplement_entropy = true;
+	CTX_->flags |= THREEGEN_GET_ENTROPY;
 }
 
 #define ERR_MIN_PW_SIZE_PROMPT_ "Error: Minimum password size is 1 character.\n"

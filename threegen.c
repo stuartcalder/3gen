@@ -3,7 +3,7 @@
 #include <shim/errors.h>
 #include <shim/mlock.h>
 
-#ifdef SHIM_FEATURE_MEMORYLOCKING
+#ifdef SHIM_HAS_MEMORYLOCKING
 #	define  LOCK_MEM_(memory, size)	  shim_lock_memory( memory, size )
 #	define ULOCK_MEM_(memory, size)	shim_unlock_memory( memory, size )
 #else
@@ -43,25 +43,25 @@ set_character_table (Threegen * ctx) {
 	SHIM_STATIC_ASSERT (sizeof(Symbol_Set) == THREEGEN_NUM_SYMBOLS, "Set size mismatch.");
 	uint8_t * character = ctx->character_table;
 	bool one_is_valid = false;
-	if( ctx->use_lcase ) {
+	if( ctx->flags & THREEGEN_USE_LCASE ) {
 		memcpy( character, Lowercase_Set, sizeof(Lowercase_Set) );
 		character += sizeof(Lowercase_Set);
 		ctx->num_chars += sizeof(Lowercase_Set);
 		one_is_valid = true;
 	}
-	if( ctx->use_ucase ) {
+	if( ctx->flags & THREEGEN_USE_UCASE ) {
 		memcpy( character, Uppercase_Set, sizeof(Uppercase_Set) );
 		character += sizeof(Uppercase_Set);
 		ctx->num_chars += sizeof(Uppercase_Set);
 		one_is_valid = true;
 	}
-	if( ctx->use_digits ) {
+	if( ctx->flags & THREEGEN_USE_DIGITS ) {
 		memcpy( character, Digit_Set, sizeof(Digit_Set) );
 		character += sizeof(Digit_Set);
 		ctx->num_chars += sizeof(Digit_Set);
 		one_is_valid = true;
 	}
-	if( ctx->use_symbols) {
+	if( ctx->flags & THREEGEN_USE_SYMBOLS ) {
 		memcpy( character, Symbol_Set, sizeof(Symbol_Set) );
 		character += sizeof(Symbol_Set);
 		ctx->num_chars += sizeof(Symbol_Set);
@@ -140,14 +140,14 @@ threegen (int argc, char ** argv,
 	symm_csprng_init( &crypto.csprng );
 	shim_process_args( argc, argv, arg_processor, ctx );
 	set_character_table( ctx );
-	if( ctx->supplement_entropy )
+	if( ctx->flags & THREEGEN_GET_ENTROPY )
 		supplement_entropy_( &crypto.csprng, crypto.ent_bytes );
 	SHIM_OPENBSD_PLEDGE ("stdio tty", NULL);
 	symm_csprng_get( &crypto.csprng,
 			 (uint8_t *)crypto.rand_bytes,
 			 sizeof(crypto.rand_bytes) );
 	int const size = generate_password_( ctx, crypto.passwd, crypto.rand_bytes );
-	if( ctx->use_formatting ) {
+	if( ctx->flags & THREEGEN_USE_FORMATTING ) {
 		enum {
 			CHARS_PER_BLOCK_ = 5,
 			BLOCKS_PER_LINE_ = 5

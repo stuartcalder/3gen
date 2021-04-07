@@ -1,4 +1,4 @@
-project('3gen', 'c', default_options: ['c_std=c18', 'optimization=3', 'buildtype=release', 'strip=true'])
+project('3gen', 'c', default_options: ['c_std=c17', 'optimization=3', 'buildtype=release', 'strip=true'])
 
 _PROJECT = '3gen'
 _LANG = 'c'
