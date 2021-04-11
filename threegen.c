@@ -113,12 +113,11 @@ generate_password_ (Threegen *       SHIM_RESTRICT ctx,
 		    uint8_t *        SHIM_RESTRICT pw,
 		    uint64_t const * SHIM_RESTRICT rand_words)
 {
-	uint64_t const local_limit = THREEGEN_UPPER_LIMIT + (THREEGEN_UPPER_LIMIT % ((uint64_t)ctx->num_chars));
-	uint64_t const quanta_per_char = local_limit / ((uint64_t)ctx->num_chars);
-
+	uint64_t const local_limit = THREEGEN_UPPER_LIMIT - (THREEGEN_UPPER_LIMIT % ((uint64_t)ctx->num_chars));
+	uint64_t const quanta_per_char = local_limit / ((uint64_t)ctx->num_chars); /* The number of integers per each character. */
 	memset( pw, 0, THREEGEN_PW_BUF_SIZE );
 	int const requested_pw_size = ctx->requested_pw_size;
-	for( int i = 0; i < requested_pw_size; ++i) {
+	for( int i = 0; i < requested_pw_size; ++i ) {
 		uint64_t offset;
 		uint64_t p = rand_words[ i ];
 		if( p <= local_limit ) {
