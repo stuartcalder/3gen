@@ -7,7 +7,7 @@
 	STRINGIFY_IMPL_ (text)
 
 #ifdef THREEGEN_EXT_STRICT_ARG_PROCESSING
-#	define HANDLE_INVALID_ARG_(arg) SHIM_ERRX ("Error: Invalid argument (%s)\n", arg)
+#	define HANDLE_INVALID_ARG_(arg) shim_errx("Error: Invalid argument (%s)\n", arg)
 #else
 #	define HANDLE_INVALID_ARG_(arg) /* Nil */
 #endif
@@ -142,22 +142,22 @@ HANDLER_IMPL_ (password_size) {
 	char const * str = *str_arr;
 	size_t const str_size = strlen( str );
 	if( str_size < 1 )
-		SHIM_ERRX (ERR_MIN_PW_SIZE_PROMPT_);
+		shim_errx(ERR_MIN_PW_SIZE_PROMPT_);
 	if( str_size > 3 )
-		SHIM_ERRX (ERR_MAX_PW_SIZE_PROMPT_);
+		shim_errx(ERR_MAX_PW_SIZE_PROMPT_);
 	char * scratch_str = (char *)shim_enforce_malloc( str_size + 1 );
 	{
 		memcpy( scratch_str, str, (str_size + 1) );
 		int num_digits = shim_shift_left_digits( scratch_str, str_size );
 		if( num_digits < 1 )
-			SHIM_ERRX (ERR_MIN_PW_SIZE_PROMPT_);
+			shim_errx(ERR_MIN_PW_SIZE_PROMPT_);
 		if( num_digits > 3 )
-			SHIM_ERRX (ERR_MAX_PW_SIZE_PROMPT_);
+			shim_errx(ERR_MAX_PW_SIZE_PROMPT_);
 		int size = atoi( scratch_str );
 		if( size < 1 )
-			SHIM_ERRX (ERR_MIN_PW_SIZE_PROMPT_);
+			shim_errx(ERR_MIN_PW_SIZE_PROMPT_);
 		if( size > THREEGEN_MAX_PW_SIZE )
-			SHIM_ERRX (ERR_MAX_PW_SIZE_PROMPT_);
+			shim_errx(ERR_MAX_PW_SIZE_PROMPT_);
 		CTX_->requested_pw_size = size;
 	}
 	free( scratch_str );

@@ -68,7 +68,7 @@ set_character_table (Threegen * ctx) {
 		one_is_valid = true;
 	}
 	if( !one_is_valid )
-		SHIM_ERRX ("Error: No valid character sets chosen. Use -h for help.\n");
+		shim_errx("Error: No valid character sets chosen. Use -h for help.\n");
 }
 
 #if    defined (SHIM_OS_UNIXLIKE)
