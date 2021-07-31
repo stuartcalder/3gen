@@ -5,13 +5,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-/* Shim */
-#include <shim/macros.h>
-#include <shim/operations.h>
-#include <shim/args.h>
-#include <shim/term.h>
-/* Symm */
-#include <symm/csprng.h>
+/* Base */
+#include <Base/macros.h>
+#include <Base/operations.h>
+#include <Base/args.h>
+#include <Base/term.h>
+/* Skc */
+#include <Skc/csprng.h>
 
 #define THREEGEN_MAX_PW_SIZE		125
 #define THREEGEN_PW_BUF_SIZE		(THREEGEN_MAX_PW_SIZE + 1)
@@ -22,19 +22,19 @@
  * we can take from stdin to supplement entropy.
  */
 #define THREEGEN_MAX_ENT_SIZE		120
-#define THREEGEN_ENT_BUF_SIZE		(THREEGEN_MAX_ENT_SIZE + 1 + SYMM_THREEFISH512_BLOCK_BYTES)
+#define THREEGEN_ENT_BUF_SIZE		(THREEGEN_MAX_ENT_SIZE + 1 + SKC_THREEFISH512_BLOCK_BYTES)
 #define THREEGEN_NUM_LCASE		26
 #define THREEGEN_NUM_UCASE		26
 #define THREEGEN_NUM_DIGITS		10
 #define THREEGEN_NUM_SYMBOLS		32
 #define THREEGEN_NUM_ALL_CHARS		(THREEGEN_NUM_LCASE + THREEGEN_NUM_UCASE + THREEGEN_NUM_DIGITS + THREEGEN_NUM_SYMBOLS)
 #define THREEGEN_UPPER_LIMIT		(UINT64_MAX - THREEGEN_NUM_ALL_CHARS)
-#define THREEGEN_USE_LCASE		0b00000001
-#define THREEGEN_USE_UCASE		0b00000010
-#define THREEGEN_USE_DIGITS		0b00000100
-#define THREEGEN_USE_SYMBOLS		0b00001000
-#define THREEGEN_USE_FORMATTING		0b00010000
-#define THREEGEN_GET_ENTROPY		0b00100000
+#define THREEGEN_USE_LCASE		0x01
+#define THREEGEN_USE_UCASE		0x02
+#define THREEGEN_USE_DIGITS		0x04
+#define THREEGEN_USE_SYMBOLS		0x08
+#define THREEGEN_USE_FORMATTING		0x10
+#define THREEGEN_GET_ENTROPY		0x20
 
 typedef struct {
 	uint8_t character_table [THREEGEN_NUM_ALL_CHARS];
@@ -42,11 +42,12 @@ typedef struct {
 	int     requested_pw_size;
 	int     num_chars;
 } Threegen;
+#define THREEGEN_NULL_LITERAL (Threegen){0}
 
-SHIM_BEGIN_DECLS
+#define R_(ptr) ptr BASE_RESTRICT
+BASE_BEGIN_DECLS
 
-static inline void
-print_help () {
+static inline void print_help (void) {
 	puts( 
 		"Usage: 3gen [-h] [-l] [-u] [-d] [-s] [-a] [-f] [-E] Number_Characters\n"
 		"Switches MUST be in seperate words. (i.e. 3gen -l -u 20; NOT 3gen -lu 20)\n"
@@ -61,12 +62,11 @@ print_help () {
 	);
 }
 
-void
-set_character_table (Threegen *);
+void set_character_table (Threegen*);
 
-void
-threegen (int, char **, Threegen * SHIM_RESTRICT);
+void threegen (int, char **, R_(Threegen*));
 
-SHIM_END_DECLS
+BASE_END_DECLS
+#undef R_
 
 #endif /* ~ THREEGEN_H */

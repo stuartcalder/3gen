@@ -2,46 +2,40 @@
 #define THREEGEN_ARGS_H
 #include "threegen.h"
 
-SHIM_BEGIN_DECLS
+#define R_(ptr) ptr BASE_RESTRICT
+BASE_BEGIN_DECLS
 
-Shim_Arg_Handler_f *
-short_parser (char const *);
+Base_Arg_Handler_f* short_parser (const char*);
+Base_Arg_Handler_f* long_parser (const char*);
+Base_Arg_Handler_f* floating_parser (const char*);
+Base_Arg_Parser_f*  arg_processor (const char*, void* BASE_RESTRICT);
 
-Shim_Arg_Handler_f *
-long_parser (char const *);
+#define PROTOTYPE_HANDLER_(pfx) \
+  void pfx##_handler (char**, const int, void* BASE_RESTRICT)
+#define EQUIVALENT_HANDLER_(ptrPfx, funcPfx) \
+  static Base_Arg_Handler_f* const ptrPfx##_handler = funcPfx##_handler
 
-Shim_Arg_Handler_f *
-floating_parser (char const *);
-
-Shim_Arg_Parser_f *
-arg_processor (char const *, void * SHIM_RESTRICT);
-
-#define PROTOTYPE_HANDLER_(prefix) \
-	void \
-	prefix##_handler (char **, int const, void * SHIM_RESTRICT)
-#define PROTOTYPE_EQUIVALENT_HANDLER_(ptr_prefix, func_prefix) \
-	static Shim_Arg_Handler_f * const ptr_prefix##_handler = func_prefix##_handler
-
-PROTOTYPE_HANDLER_ (h);
-PROTOTYPE_EQUIVALENT_HANDLER_ (help, h);
-PROTOTYPE_HANDLER_ (l);
-PROTOTYPE_EQUIVALENT_HANDLER_ (lower, l);
-PROTOTYPE_HANDLER_ (u);
-PROTOTYPE_EQUIVALENT_HANDLER_ (upper, u);
-PROTOTYPE_HANDLER_ (d);
-PROTOTYPE_EQUIVALENT_HANDLER_ (digit, d);
-PROTOTYPE_HANDLER_ (s);
-PROTOTYPE_EQUIVALENT_HANDLER_ (symbol, s);
-PROTOTYPE_HANDLER_ (a);
-PROTOTYPE_EQUIVALENT_HANDLER_ (all, a);
-PROTOTYPE_HANDLER_ (f);
-PROTOTYPE_EQUIVALENT_HANDLER_ (format, f);
-PROTOTYPE_HANDLER_ (E);
-PROTOTYPE_EQUIVALENT_HANDLER_ (entropy, E);
-PROTOTYPE_HANDLER_ (password_size);
+PROTOTYPE_HANDLER_(h);
+EQUIVALENT_HANDLER_(help, h);
+PROTOTYPE_HANDLER_(l);
+EQUIVALENT_HANDLER_(lower, l);
+PROTOTYPE_HANDLER_(u);
+EQUIVALENT_HANDLER_(upper, u);
+PROTOTYPE_HANDLER_(d);
+EQUIVALENT_HANDLER_(digit, d);
+PROTOTYPE_HANDLER_(s);
+EQUIVALENT_HANDLER_(symbol, s);
+PROTOTYPE_HANDLER_(a);
+EQUIVALENT_HANDLER_(all, a);
+PROTOTYPE_HANDLER_(f);
+EQUIVALENT_HANDLER_(format, f);
+PROTOTYPE_HANDLER_(E);
+EQUIVALENT_HANDLER_(entropy, E);
+PROTOTYPE_HANDLER_(password_size);
 #undef PROTOTYPE_EQUIVALENT_HANDLER_
 #undef PROTOTYPE_HANDLER_
 
-SHIM_END_DECLS
+BASE_END_DECLS
+#undef R_
 
 #endif /* ~ THREEGEN_ARGS_H */

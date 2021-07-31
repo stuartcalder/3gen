@@ -10,16 +10,16 @@ _SUPPORTED_COMPILERS         = _GCC_COMPATIBLE_COMPILERS + ['msvc']
 
 compiler = meson.get_compiler(_LANG)
 os = host_machine.system()
-shim_static = get_option('shim_static')
-symm_static = get_option('symm_static')
+Base_static = get_option('Base_static')
+Skc_static  = get_option('Skc_static')
 
 assert (os in _SUPPORTED_OPERATING_SYSTEMS, 'You are trying to build symm using an unsupported operating system!')
 assert (compiler.get_id() in _SUPPORTED_COMPILERS, 'You are trying to build symm using an unsupported compiler!')
 
 if os == 'windows' and compiler.get_id() == 'msvc'
-	_D_PREFIX = '/D'
+	_D = '/D'
 else
-	_D_PREFIX = '-D'
+	_D = '-D'
 endif
 
 src = [
@@ -38,18 +38,18 @@ gcc_compatible_flags = [
   '-Wall',
   '-funroll-loops'
   ]
-if shim_static
-  lang_flags += _D_PREFIX + 'SHIM_EXT_STATIC_LIB'
+if Base_static
+  lang_flags += _D + 'BASE_EXTERN_STATIC_LIB'
 endif
-if symm_static
-  lang_flags += _D_PREFIX + 'SYMM_EXT_STATIC_LIB'
+if Skc_static
+  lang_flags += _D + 'SKC_EXTERN_STATIC_LIB'
 endif
 if os != 'netbsd' and compiler.get_id() != 'clang'
   gcc_compatible_flags += '-flto'
 endif
 
 if os == 'darwin' # On MacOS we require __STDC_WANT_LIB_EXT1__ to be defined as 1, for access to memset_s.
-  lang_flags += _D_PREFIX + '__STDC_WANT_LIB_EXT1__=1'
+  lang_flags += _D + '__STDC_WANT_LIB_EXT1__=1'
 endif
 
 if os in _UNIXLIKE_OPERATING_SYSTEMS
@@ -66,17 +66,17 @@ if os in _UNIXLIKE_OPERATING_SYSTEMS and compiler.get_id() in _GCC_COMPATIBLE_CO
 endif
 
 if os in ['darwin', 'freebsd', 'openbsd']
-  lib_deps += compiler.find_library('shim', static: shim_static, dirs: '/usr/local/lib')
-  lib_deps += compiler.find_library('symm', static: symm_static, dirs: '/usr/local/lib')
+  lib_deps += compiler.find_library('Base', static: Base_static, dirs: '/usr/local/lib')
+  lib_deps += compiler.find_library('Skc', static: Skc_static, dirs: '/usr/local/lib')
 elif os == 'windows'
-  lib_deps += compiler.find_library('shim', static: shim_static, dirs: 'C:\lib')
-  lib_deps += compiler.find_library('symm', static: symm_static, dirs: 'C:\lib')
+  lib_deps += compiler.find_library('Base', static: Base_static, dirs: 'C:\lib')
+  lib_deps += compiler.find_library('Skc', static: Skc_static, dirs: 'C:\lib')
 else
-  lib_deps += compiler.find_library('shim', static: shim_static)
-  lib_deps += compiler.find_library('symm', static: symm_static)
+  lib_deps += compiler.find_library('Base', static: Base_static)
+  lib_deps += compiler.find_library('Skc', static: Skc_static)
 endif
 
-if shim_static and os in _UNIXLIKE_OPERATING_SYSTEMS
+if Base_static and os in _UNIXLIKE_OPERATING_SYSTEMS
   lib_deps += compiler.find_library('ncurses')
   if os == 'linux'
     lib_deps += compiler.find_library('tinfo')
@@ -86,7 +86,7 @@ endif
 inc_dir += '..'
 
 if get_option('strict_arg_processing')
-  lang_flags += _D_PREFIX + 'THREEGEN_EXT_STRICT_ARG_PROCESSING'
+  lang_flags += _D + 'THREEGEN_EXTERN_STRICT_ARG_PROCESSING'
 endif
 
 
