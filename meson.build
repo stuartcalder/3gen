@@ -11,6 +11,7 @@ _SUPPORTED_COMPILERS         = _GCC_COMPATIBLE_COMPILERS + ['msvc']
 compiler = meson.get_compiler(_LANG)
 os = host_machine.system()
 Base_static = get_option('Base_static')
+Base_mlock  = get_option('Base_mlock')
 Skc_static  = get_option('Skc_static')
 
 assert (os in _SUPPORTED_OPERATING_SYSTEMS, 'You are trying to build symm using an unsupported operating system!')
@@ -81,6 +82,10 @@ if Base_static and os in _UNIXLIKE_OPERATING_SYSTEMS
   if os == 'linux'
     lib_deps += compiler.find_library('tinfo')
   endif
+endif
+
+if Base_mlock and os != 'openbsd'
+  lang_flags += _D + 'BASE_EXTERN_MLOCK'
 endif
 
 inc_dir += '..'

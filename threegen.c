@@ -6,15 +6,17 @@
 #define R_(p) p BASE_RESTRICT
 
 #ifdef BASE_MLOCK_H
-#  define LOCK_INIT_ do { \
-	Base_MLock_g_init_handled(); \
-} while (0)
-#  define  LOCK_M_(mem_ptr, size)   Base_mlock(mem_ptr, size)
-#  define ULOCK_M_(mem_ptr, size) Base_munlock(mem_ptr, size)
+#  define LOCK_INIT_			Base_MLock_g_init_handled()
+#  define  LOCK_M_(mem_ptr, size)	Base_mlock(mem_ptr, size)
+#  define ULOCK_M_(mem_ptr, size)	Base_munlock(mem_ptr, size)
+#  define ALLOC_(alignment, size)	Base_aligned_malloc(alignment, size)
+#  define DEALLOC_(ptr)			Base_aligned_free(ptr)
 #else
 #  define LOCK_INIT_ /* Nil. */
 #  define LOCK_M_    /* Nil. */
 #  define ULOCK_M_   /* Nil. */
+#  define ALLOC_(alignment, size)	malloc(size)
+#  define DEALLOC_(ptr)			free(ptr)
 #endif
 
 typedef struct {
@@ -125,15 +127,19 @@ static size_t generate_password_ (R_(Threegen*)       ctx,
 }
 
 void threegen (int argc, char** argv, R_(Threegen*) ctx) {
-	Crypto crypto;
-	Skc_CSPRNG_init(&crypto.csprng);
+	LOCK_INIT_;
+	Crypto* crypto;
+	Base_assert_msg((bool)(crypto = (Crypto*)ALLOC_(Base_MLock_g.page_size, sizeof(Crypto))),
+			"Error: Memory allocation failure!\n");
+	LOCK_M_(crypto, sizeof(crypto));
+	Skc_CSPRNG_init(&crypto->csprng);
 	Base_process_args(argc, argv, arg_processor, ctx);
 	set_character_table(ctx);
 	if (ctx->flags & THREEGEN_GET_ENTROPY)
-		supplement_entropy_(&crypto.csprng, crypto.ent_bytes);
-	BASE_OPENBSD_PLEDGE ("stdio tty", NULL);
-	Skc_CSPRNG_get(&crypto.csprng, (uint8_t*)crypto.rand_bytes, sizeof(crypto.rand_bytes));
-	const int size = generate_password_(ctx, crypto.passwd, crypto.rand_bytes);
+		supplement_entropy_(&crypto->csprng, crypto->ent_bytes);
+	BASE_OPENBSD_PLEDGE("stdio tty", NULL);
+	Skc_CSPRNG_get(&crypto->csprng, (uint8_t*)crypto->rand_bytes, sizeof(crypto->rand_bytes));
+	const int size = generate_password_(ctx, crypto->passwd, crypto->rand_bytes);
 	if (ctx->flags & THREEGEN_USE_FORMATTING) {
 		enum {
 			CHARS_PER_BLOCK_ = 5,
@@ -141,7 +147,7 @@ void threegen (int argc, char** argv, R_(Threegen*) ctx) {
 		};
 		int chars_left = size;
 		int blocks_left = BLOCKS_PER_LINE_;
-		uint8_t* pw = crypto.passwd;
+		uint8_t* pw = crypto->passwd;
 		while (chars_left >= CHARS_PER_BLOCK_) {
 			fwrite(pw, 1, CHARS_PER_BLOCK_, stdout);
 			pw         += CHARS_PER_BLOCK_;
@@ -158,9 +164,10 @@ void threegen (int argc, char** argv, R_(Threegen*) ctx) {
 		if (blocks_left != BLOCKS_PER_LINE_)
 			putchar('\n');
 	} else {
-		fwrite(crypto.passwd, 1, size, stdout);
+		fwrite(crypto->passwd, 1, size, stdout);
 		putchar('\n');
 	}
-	Base_secure_zero(&crypto, sizeof(crypto));
+	Base_secure_zero(crypto, sizeof(*crypto));
+	DEALLOC_(crypto);
 	Base_secure_zero(ctx, sizeof(*ctx));
 }

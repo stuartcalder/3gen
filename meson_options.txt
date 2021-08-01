@@ -1,4 +1,5 @@
 option('native_optimize', type: 'boolean', value: false)
 option('strict_arg_processing', type: 'boolean', value: true)
 option('Base_static', type: 'boolean', value: false)
+option('Base_mlock' , type: 'boolean', value: true)
 option('Skc_static' , type: 'boolean', value: false)
