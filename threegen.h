@@ -12,12 +12,13 @@
 #include <Base/term.h>
 /* Skc */
 #include <Skc/csprng.h>
+#include <Skc/skein512.h>
 
 #define THREEGEN_MAX_PW_SIZE		125
 #define THREEGEN_PW_BUF_SIZE		(THREEGEN_MAX_PW_SIZE + 1)
 #define THREEGEN_NUM_RAND_WORDS		THREEGEN_PW_BUF_SIZE
 #define THREEGEN_NUM_RAND_BYTES		(THREEGEN_NUM_RAND_WORDS * 8)
-/* These entropy bytes are going to Shim code with a hard-coded buffer size.
+/* These entropy bytes are going to Base code with a hard-coded buffer size.
  * Use that hard-coded buffer size to determine the maximum number of bytes
  * we can take from stdin to supplement entropy.
  */

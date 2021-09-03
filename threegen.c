@@ -7,15 +7,15 @@
 
 #ifdef BASE_MLOCK_H
 #  define LOCK_INIT_			Base_MLock_g_init_handled()
-#  define  LOCK_M_(mem_ptr, size)	Base_mlock(mem_ptr, size)
-#  define ULOCK_M_(mem_ptr, size)	Base_munlock(mem_ptr, size)
-#  define ALLOC_(alignment, size)	Base_aligned_malloc(alignment, size)
+#  define  LOCK_M_(mem_ptr, size)	Base_mlock_or_die(mem_ptr, size)
+#  define ULOCK_M_(mem_ptr, size)	Base_munlock_or_die(mem_ptr, size)
+#  define ALLOC_(alignment, size)	Base_aligned_malloc_or_die(alignment, size)
 #  define DEALLOC_(ptr)			Base_aligned_free(ptr)
 #else
 #  define LOCK_INIT_ /* Nil. */
 #  define LOCK_M_    /* Nil. */
 #  define ULOCK_M_   /* Nil. */
-#  define ALLOC_(alignment, size)	malloc(size)
+#  define ALLOC_(discard, size)		Base_malloc_or_die(size)
 #  define DEALLOC_(ptr)			free(ptr)
 #endif
 
@@ -25,6 +25,7 @@ typedef struct {
 	uint8_t    ent_bytes  [THREEGEN_ENT_BUF_SIZE];
 	uint8_t    passwd     [THREEGEN_PW_BUF_SIZE];
 } Crypto;
+#define CRYPTO_NULL_LITERAL (Crypto){0}
 
 void set_character_table (Threegen* ctx) {
 	static uint8_t const Lowercase_Set[] = {
@@ -126,6 +127,31 @@ static size_t generate_password_ (R_(Threegen*)       ctx,
 	return strlen((char*)pw);
 }
 
+static const Base_Arg_Long longs[] = {
+	BASE_ARG_LONG_LITERAL(all_argproc, "all"),
+	BASE_ARG_LONG_LITERAL(digit_argproc, "digit"),
+	BASE_ARG_LONG_LITERAL(entropy_argproc, "entropy"),
+	BASE_ARG_LONG_LITERAL(format_argproc, "format"),
+	BASE_ARG_LONG_LITERAL(help_argproc, "help"),
+	BASE_ARG_LONG_LITERAL(lower_argproc, "lower"),
+	BASE_ARG_LONG_LITERAL(symbol_argproc, "symbol"),
+	BASE_ARG_LONG_LITERAL(upper_argproc, "upper"),
+	BASE_ARG_LONG_NULL_LITERAL
+};
+#define N_LONGS_ ((sizeof(longs) / sizeof(Base_Arg_Long)) - 1)
+static const Base_Arg_Short shorts[] = {
+	BASE_ARG_SHORT_LITERAL(entropy_argproc, 'E'),
+	BASE_ARG_SHORT_LITERAL(all_argproc, 'a'),
+	BASE_ARG_SHORT_LITERAL(digit_argproc, 'd'),
+	BASE_ARG_SHORT_LITERAL(format_argproc, 'f'),
+	BASE_ARG_SHORT_LITERAL(help_argproc, 'h'),
+	BASE_ARG_SHORT_LITERAL(lower_argproc, 'l'),
+	BASE_ARG_SHORT_LITERAL(symbol_argproc, 's'),
+	BASE_ARG_SHORT_LITERAL(upper_argproc, 'u'),
+	BASE_ARG_SHORT_NULL_LITERAL
+};
+#define N_SHORTS_ ((sizeof(shorts) / sizeof(Base_Arg_Short)) - 1)
+
 void threegen (int argc, char** argv, R_(Threegen*) ctx) {
 	LOCK_INIT_;
 	Crypto* crypto;
@@ -133,7 +159,8 @@ void threegen (int argc, char** argv, R_(Threegen*) ctx) {
 			"Error: Memory allocation failure!\n");
 	LOCK_M_(crypto, sizeof(crypto));
 	Skc_CSPRNG_init(&crypto->csprng);
-	Base_process_args(argc, argv, arg_processor, ctx);
+	Base_assert(argc);
+	Base_process_args(argc - 1, argv + 1, N_SHORTS_, shorts, N_LONGS_, longs, ctx, password_size_argproc);
 	set_character_table(ctx);
 	if (ctx->flags & THREEGEN_GET_ENTROPY)
 		supplement_entropy_(&crypto->csprng, crypto->ent_bytes);
