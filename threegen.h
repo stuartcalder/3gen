@@ -46,7 +46,7 @@ typedef struct {
 #define THREEGEN_NULL_LITERAL (Threegen){0}
 
 #define R_(ptr) ptr BASE_RESTRICT
-BASE_BEGIN_DECLS
+BASE_BEGIN_C_DECLS
 
 static inline void print_help (void) {
 	puts( 
@@ -67,7 +67,7 @@ void set_character_table (Threegen*);
 
 void threegen (int, char **, R_(Threegen*));
 
-BASE_END_DECLS
+BASE_END_C_DECLS
 #undef R_
 
 #endif /* ~ THREEGEN_H */
