@@ -43,7 +43,7 @@ typedef struct {
 	int     requested_pw_size;
 	int     num_chars;
 } Threegen;
-#define THREEGEN_NULL_LITERAL (Threegen){0}
+#define THREEGEN_NULL_LITERAL BASE_COMPOUND_LITERAL(Threegen, 0)
 
 #define R_(ptr) ptr BASE_RESTRICT
 BASE_BEGIN_C_DECLS

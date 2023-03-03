@@ -155,7 +155,7 @@ static const Base_Arg_Short shorts[] = {
 void threegen (int argc, char** argv, R_(Threegen*) ctx) {
 	LOCK_INIT_;
 	Crypto* crypto;
-	Base_assert_msg(NULL != (crypto = (Crypto*)ALLOC_(Base_MLock_g.page_size, sizeof(Crypto))),
+	Base_assert_msg(BASE_NULL != (crypto = (Crypto*)ALLOC_(Base_MLock_g.page_size, sizeof(Crypto))),
 			"Error: Memory allocation failure!\n");
 	LOCK_M_(crypto, sizeof(crypto));
 	Skc_CSPRNG_init(&crypto->csprng);
@@ -164,7 +164,7 @@ void threegen (int argc, char** argv, R_(Threegen*) ctx) {
 	set_character_table(ctx);
 	if (ctx->flags & THREEGEN_GET_ENTROPY)
 		supplement_entropy_(&crypto->csprng, crypto->ent_bytes);
-	BASE_OPENBSD_PLEDGE("stdio tty", NULL);
+	BASE_OPENBSD_PLEDGE("stdio tty", BASE_NULL);
 	Skc_CSPRNG_get(&crypto->csprng, (uint8_t*)crypto->rand_bytes, sizeof(crypto->rand_bytes));
 	const int size = generate_password_(ctx, crypto->passwd, crypto->rand_bytes);
 	if (ctx->flags & THREEGEN_USE_FORMATTING) {
