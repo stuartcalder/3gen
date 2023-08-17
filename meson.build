@@ -10,9 +10,9 @@ _SUPPORTED_COMPILERS         = _GCC_COMPATIBLE_COMPILERS + ['msvc']
 
 compiler = meson.get_compiler(_LANG)
 os = host_machine.system()
-Base_static = get_option('Base_static')
-Base_mlock  = get_option('Base_mlock')
-Skc_static  = get_option('Skc_static')
+SSC_static = get_option('SSC_static')
+SSC_mlock  = get_option('SSC_mlock')
+PPQ_static  = get_option('PPQ_static')
 
 assert (os in _SUPPORTED_OPERATING_SYSTEMS, 'You are trying to build symm using an unsupported operating system!')
 assert (compiler.get_id() in _SUPPORTED_COMPILERS, 'You are trying to build symm using an unsupported compiler!')
@@ -24,9 +24,9 @@ else
 endif
 
 src = [
-    'args.c',
-    'threegen.c',
-    'main.c'
+  'CommandLineArg.c',
+  'Threegen.c',
+  'Main.c'
   ]
 # Setup these empty arrays that we will be appending to depending on OS, etc.
 lib_deps   = []
@@ -39,11 +39,11 @@ gcc_compatible_flags = [
   '-Wall',
   '-funroll-loops'
   ]
-if Base_static
-  lang_flags += _D + 'BASE_EXTERN_STATIC_LIB'
+if SSC_static
+  lang_flags += _D + 'SSC_EXTERN_STATIC_LIB'
 endif
-if Skc_static
-  lang_flags += _D + 'SKC_EXTERN_STATIC_LIB'
+if PPQ_static
+  lang_flags += _D + 'PPQ_EXTERN_STATIC_LIB'
 endif
 if os != 'netbsd' and compiler.get_id() != 'clang'
   gcc_compatible_flags += '-flto'
@@ -67,25 +67,25 @@ if os in _UNIXLIKE_OPERATING_SYSTEMS and compiler.get_id() in _GCC_COMPATIBLE_CO
 endif
 
 if os in ['darwin', 'freebsd', 'openbsd']
-  lib_deps += compiler.find_library('Base', static: Base_static, dirs: '/usr/local/lib')
-  lib_deps += compiler.find_library('Skc', static: Skc_static, dirs: '/usr/local/lib')
+  lib_deps += compiler.find_library('SSC', static: SSC_static, dirs: '/usr/local/lib')
+  lib_deps += compiler.find_library('PPQ', static: PPQ_static, dirs: '/usr/local/lib')
 elif os == 'windows'
-  lib_deps += compiler.find_library('Base', static: Base_static, dirs: 'C:\lib')
-  lib_deps += compiler.find_library('Skc', static: Skc_static, dirs: 'C:\lib')
+  lib_deps += compiler.find_library('SSC', static: SSC_static, dirs: 'C:\lib')
+  lib_deps += compiler.find_library('PPQ', static: PPQ_static, dirs: 'C:\lib')
 else
-  lib_deps += compiler.find_library('Base', static: Base_static)
-  lib_deps += compiler.find_library('Skc', static: Skc_static)
+  lib_deps += compiler.find_library('SSC', static: SSC_static)
+  lib_deps += compiler.find_library('PPQ', static: PPQ_static)
 endif
 
-if Base_static and os in _UNIXLIKE_OPERATING_SYSTEMS
+if SSC_static and os in _UNIXLIKE_OPERATING_SYSTEMS
   lib_deps += compiler.find_library('ncurses')
   if os == 'linux'
     lib_deps += compiler.find_library('tinfo')
   endif
 endif
 
-if Base_mlock and os != 'openbsd'
-  lang_flags += _D + 'BASE_EXTERN_MLOCK'
+if SSC_mlock and os != 'openbsd'
+  lang_flags += _D + 'SSC_EXTERN_MEMLOCK'
 endif
 
 inc_dir += '..'
