@@ -12,9 +12,9 @@
 #include <SSC/Terminal.h>
 #include <SSC/Error.h>
 
-/* PPQ */
-#include <PPQ/CSPRNG.h>
-#include <PPQ/Skein512.h>
+/* TSC */
+#include <TSC/CSPRNG.h>
+#include <TSC/Skein512.h>
 
 #define THREEGEN_MAX_PW_SIZE		125
 #define THREEGEN_PW_BUF_SIZE		(THREEGEN_MAX_PW_SIZE + 1)
@@ -24,7 +24,7 @@
  * Use that hard-coded buffer size to determine the maximum number of bytes
  * we can take from stdin to supplement entropy. */
 #define THREEGEN_MAX_ENT_SIZE		120
-#define THREEGEN_ENT_BUF_SIZE		(THREEGEN_MAX_ENT_SIZE + 1 + PPQ_THREEFISH512_BLOCK_BYTES)
+#define THREEGEN_ENT_BUF_SIZE		(THREEGEN_MAX_ENT_SIZE + 1 + TSC_THREEFISH512_BLOCK_BYTES)
 #define THREEGEN_NUM_LCASE		26
 #define THREEGEN_NUM_UCASE		26
 #define THREEGEN_NUM_DIGITS		10

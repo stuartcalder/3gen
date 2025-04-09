@@ -20,7 +20,7 @@
 #endif
 
 typedef struct {
-  PPQ_CSPRNG csprng;
+  TSC_CSPRNG csprng;
   uint64_t   rand_bytes [THREEGEN_NUM_RAND_WORDS];
   uint8_t    ent_bytes  [THREEGEN_ENT_BUF_SIZE];
   uint8_t    passwd     [THREEGEN_PW_BUF_SIZE];
@@ -90,10 +90,10 @@ void set_character_table (Threegen* ctx)
 #define ENT_PROMPT_ "Please input up to " SSC_STRINGIFY(THREEGEN_MAX_ENT_SIZE) " random characters." PROMPT_
 
 static void
-supplement_entropy_(PPQ_CSPRNG* R_ csprng, uint8_t* R_ buffer)
+supplement_entropy_(TSC_CSPRNG* R_ csprng, uint8_t* R_ buffer)
 {
   uint8_t* hash = buffer;
-  uint8_t* keyboard_input = hash + PPQ_THREEFISH512_BLOCK_BYTES;
+  uint8_t* keyboard_input = hash + TSC_THREEFISH512_BLOCK_BYTES;
   SSC_Terminal_init();
   int num_input_chars = SSC_Terminal_getPassword(keyboard_input,
     ENT_PROMPT_,
@@ -101,11 +101,12 @@ supplement_entropy_(PPQ_CSPRNG* R_ csprng, uint8_t* R_ buffer)
     THREEGEN_MAX_ENT_SIZE,
     (THREEGEN_MAX_ENT_SIZE + 1));
   SSC_Terminal_end();
-  PPQ_Skein512_hashNative(&csprng->ubi512,
-    hash,
-    keyboard_input,
-    num_input_chars);
-  PPQ_CSPRNG_reseed(csprng, hash);
+  TSC_Skein512_hashNative(
+   &csprng->skein512,
+   hash,
+   keyboard_input,
+   num_input_chars);
+  TSC_CSPRNG_reseedFromBytes(csprng, hash);
 }
 
 static size_t
@@ -164,14 +165,17 @@ void threegen (int argc, char** argv, Threegen* R_ ctx)
   SSC_assertMsg(SSC_NULL != (crypto = (Crypto*)ALLOC_(SSC_MemLock_Global.page_size, sizeof(Crypto))),
   "Error: Memory allocation failure!\n");
   LOCK_M_(crypto, sizeof(crypto));
-  PPQ_CSPRNG_init(&crypto->csprng);
+  TSC_CSPRNG_init(&crypto->csprng);
   SSC_assert(argc);
   SSC_processCommandLineArgs(argc - 1, argv + 1, N_SHORTS_, shorts, N_LONGS_, longs, ctx, password_size_argproc);
   set_character_table(ctx);
   if (ctx->flags & THREEGEN_GET_ENTROPY)
     supplement_entropy_(&crypto->csprng, crypto->ent_bytes);
   SSC_OPENBSD_PLEDGE("stdio tty", SSC_NULL);
-  PPQ_CSPRNG_get(&crypto->csprng, (uint8_t*)crypto->rand_bytes, sizeof(crypto->rand_bytes));
+  TSC_CSPRNG_getBytes(
+   &crypto->csprng,
+   (uint8_t*)crypto->rand_bytes,
+   sizeof(crypto->rand_bytes));
   const int size = generate_password_(ctx, crypto->passwd, crypto->rand_bytes);
   if (ctx->flags & THREEGEN_USE_FORMATTING) {
     enum {

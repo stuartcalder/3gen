@@ -12,7 +12,6 @@ compiler = meson.get_compiler(_LANG)
 os = host_machine.system()
 SSC_static = get_option('SSC_static')
 SSC_mlock  = get_option('SSC_mlock')
-PPQ_static  = get_option('PPQ_static')
 
 assert (os in _SUPPORTED_OPERATING_SYSTEMS, 'You are trying to build symm using an unsupported operating system!')
 assert (compiler.get_id() in _SUPPORTED_COMPILERS, 'You are trying to build symm using an unsupported compiler!')
@@ -42,9 +41,6 @@ gcc_compatible_flags = [
 if SSC_static
   lang_flags += _D + 'SSC_EXTERN_STATIC_LIB'
 endif
-if PPQ_static
-  lang_flags += _D + 'PPQ_EXTERN_STATIC_LIB'
-endif
 if os != 'netbsd' and compiler.get_id() != 'clang'
   gcc_compatible_flags += '-flto'
 endif
@@ -68,13 +64,13 @@ endif
 
 if os in ['darwin', 'freebsd', 'openbsd']
   lib_deps += compiler.find_library('SSC', static: SSC_static, dirs: '/usr/local/lib')
-  lib_deps += compiler.find_library('PPQ', static: PPQ_static, dirs: '/usr/local/lib')
+  lib_deps += compiler.find_library('TSC', static: false, dirs: '/usr/local/lib')
 elif os == 'windows'
   lib_deps += compiler.find_library('SSC', static: SSC_static, dirs: 'C:\lib')
-  lib_deps += compiler.find_library('PPQ', static: PPQ_static, dirs: 'C:\lib')
+  lib_deps += compiler.find_library('TSC', static: false, dirs: 'C:\lib')
 else
   lib_deps += compiler.find_library('SSC', static: SSC_static)
-  lib_deps += compiler.find_library('PPQ', static: PPQ_static)
+  lib_deps += compiler.find_library('TSC', static: false)
 endif
 
 if SSC_static and os in _UNIXLIKE_OPERATING_SYSTEMS
